@@ -5,198 +5,73 @@
 #announce: Все обновы в ТГ, кликай на лого ТГ! THX TG:Swordware
 
 {
-    "dns": {
-        "queryStrategy": "UseIPv4",
-        "servers": [
-            "8.8.8.8",
-            "1.1.1.1"
-        ],
-        "tag": "dns-in"
-    },
-    "inbounds": [
-        {
-            "listen": "127.0.0.1",
-            "port": 10808,
-            "protocol": "socks",
-            "settings": {
-                "auth": "noauth",
-                "udp": true
-            },
-            "sniffing": {
-                "destOverride": [
-                    "http",
-                    "tls",
-                    "quic"
-                ],
-                "enabled": true,
-                "routeOnly": false
-            },
-            "tag": "socks"
-        },
-        {
-            "listen": "127.0.0.1",
-            "port": 10809,
-            "protocol": "http",
-            "settings": {
-                "allowTransparent": false
-            },
-            "sniffing": {
-                "destOverride": [
-                    "http",
-                    "tls",
-                    "quic"
-                ],
-                "enabled": true,
-                "routeOnly": false
-            },
-            "tag": "http"
-        }
-    ],
-    "log": {
-        "loglevel": "error"
-    },
-    "outbounds": [
-        {
-            "protocol": "vless",
-            "settings": {
-                "vnext": [
-                    {
-                        "address": "45.15.128.167",
-                        "port": 603,
-                        "users": [
-                            {
-                                "encryption": "none",
-                                "flow": "xtls-rprx-vision",
-                                "id": "92d253ca-28af-47c7-9c42-09e40d96f77d"
-                            }
-                        ]
-                    }
-                ]
-            },
-            "streamSettings": {
-                "network": "tcp",
-                "realitySettings": {
-                    "fingerprint": "random",
-                    "publicKey": "lWJaKBaMPs0NYHGCbfsrmn64R4juEQEvfmHNnL741Ek",
-                    "serverName": "www.amd.com"
-                },
-                "security": "reality",
-                "tcpSettings": {}
-            },
-            "tag": "proxy"
-        },
-        {
-            "protocol": "freedom",
-            "streamSettings": {
-                "sockopt": {
-                    "domainStrategy": "ForceIPv4"
-                }
-            },
-            "tag": "direct"
-        },
-        {
-            "protocol": "blackhole",
-            "settings": {
-                "response": {
-                    "type": "http"
-                }
-            },
-            "tag": "block"
-        },
-        {
-            "protocol": "freedom",
-            "settings": {
-                "fragment": {
-                    "interval": "10-20",
-                    "length": "50-100",
-                    "maxSplit": "100-200",
-                    "packets": "tlshello"
-                }
-            },
-            "streamSettings": {
-                "network": "raw",
-                "security": "",
-                "sockopt": {
-                    "TcpNoDelay": true,
-                    "domainStrategy": "ForceIPv4",
-                    "mark": 255
-                }
-            },
-            "tag": "fragment"
-        },
-        {
-            "protocol": "dns",
-            "tag": "dns-out"
-        }
-    ],
-    "remarks": "🇳🇱 Нидерланды",
-    "routing": {
-        "domainMatcher": "hybrid",
-        "domainStrategy": "IPIfNonMatch",
-        "rules": [
-            {
-                "outboundTag": "direct",
-                "protocol": [
-                    "bittorrent"
-                ],
-                "type": "field"
-            },
-            {
-                "domain": [
-                    "domain:mtalk.google.com",
-                    "domain:push.apple.com",
-                    "domain:api.push.apple.com",
-                    "domain:push-apple.com.akadns.net",
-                    "domain:*-courier.push.apple.com"
-                ],
-                "outboundTag": "direct",
-                "type": "field"
-            },
-            {
-                "ip": [
-                    "17.0.0.0/8"
-                ],
-                "outboundTag": "direct",
-                "type": "field"
-            },
-            {
-                "ip": [
-                    "geoip:ru",
-                    "geoip:by"
-                ],
-                "outboundTag": "direct",
-                "type": "field"
-            },
-            {
-                "domain": [
-                    "regexp:.*\\.ru$",
-                    "regexp:.*\\.su$",
-                    "regexp:.*\\.by$",
-                    "regexp:.*\\.xn--p1ai$",
-                    "geosite:category-gov-ru",
-                    "geosite:category-ru",
-                    "geosite:vk",
-                    "geosite:yandex",
-                    "domain:avito.ru",
-                    "domain:ozon.ru",
-                    "domain:wildberries.ru",
-                    "domain:tinkoff.ru",
-                    "domain:alfabank.ru",
-                    "domain:sbermarket.ru"
-                ],
-                "outboundTag": "direct",
-                "type": "field"
-            },
-            {
-                "inboundTag": [
-                    "dns-in"
-                ],
-                "outboundTag": "proxy"
-            },
-            {
-                "outboundTag": "dns-out",
-                "port": 53
-            }
-        ]
+  "version": 1,
+  "remarks": "PrihVPN Official",
+  "servers": [
+    {
+      "remarks": "🇳🇱 Нидерланды VLESS",
+      "address": "45.15.128.167",
+      "port": 603,
+      "id": "92d253ca-28af-47c7-9c42-09e40d96f77d",
+      "encryption": "none",
+      "flow": "xtls-rprx-vision",
+      "network": "tcp",
+      "security": "reality",
+      "realitySettings": {
+        "publicKey": "lWJaKBaMPs0NYHGCbfsrmn64R4juEQEvfmHNnL741Ek",
+        "fingerprint": "random",
+        "serverName": "www.amd.com"
+      },
+      "plugin": "",
+      "pluginConfig": ""
     }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "45.15.128.167",
+            "port": 603,
+            "users": [
+              {
+                "id": "92d253ca-28af-47c7-9c42-09e40d96f77d",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "publicKey": "lWJaKBaMPs0NYHGCbfsrmn64R4juEQEvfmHNnL741Ek",
+          "fingerprint": "random",
+          "serverName": "www.amd.com"
+        }
+      },
+      "tag": "proxy"
+    },
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "ip": ["geoip:ru", "geoip:private"],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "port": "0-65535",
+        "outboundTag": "proxy"
+      }
+    ]
+  }
 }
