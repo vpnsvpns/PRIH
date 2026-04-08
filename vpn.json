@@ -1,0 +1,26 @@
+#profile-update-interval: 1
+#profile-title: PrihVPN⚡
+#support-url: https://t.me/PrihsVPN
+#announce: Все обновы в ТГ, кликай на лого ТГ! THX TG:Swordware
+
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@45.15.128.167:603?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=lWJaKBaMPs0NYHGCbfsrmn64R4juEQEvfmHNnL741Ek&type=tcp#🇳🇱 Нидерланды
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@45.149.147.126:542?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=wxca3IiavluCbB_wm-zxyrK3aVBxkgb3pu9BivBuqBQ&type=tcp#🇫🇮 Финляндия
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@mesh-7550.internet-booster.com:773?encryption=none&security=tls&sni=mesh-7550.internet-booster.com&fp=chrome&alpn=h2&type=xhttp&mode=auto&path=/api#🇩🇪 Германия (🔥 Новые блокировки)
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@45.12.133.217:509?type=ws&security=none&path=%2Fapi#🇫🇷 Франция (🔥 Новые блокировки)
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@85.209.157.43:568?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=59QwNDh3sgvFX12hCCoCveYykCzo19hxh6wel3hN3GA&type=tcp#🇮🇳 Индия
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@85.209.157.49:568?encryption=none&security=none&type=ws&host=&path=%2Fapi#🇮🇳 Индия (🔥 Новые блокировки)
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@45.86.74.42:852?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=FoCmMBurpqNaVQWlRvyuS1um0ftKxXMnnKNbnHpe-G8&type=tcp&headerType=none#🇺🇸 США
+vless://1c1badfd-dc9c-4dc0-94f4-c81766dcb429@64.188.81.16:443?type=grpc&mode=gun&serviceName=&security=reality&fp=chrome&sni=se.scamhost.online&pbk=Fe8gygB8oyqRElnoaMS9ogNYpCd6GP-c0ackIg25MWU&sid=762d996751ef6686#🇸🇪Швеция 👑
+vless://026f3289-2fca-11f1-8c84-dcb6e8e27879@se3.zoomersky.online:443?type=xhttp&host=&path=/&mode=auto&security=reality&fp=chrome&sni=yahoo.com&pbk=CmCCHh8Mc9U_MhhMJIZwtUK8vMmaa-PPHxZ5Uy4jtUc#🇸🇪 Швеция
+vless://TMG_b059bf287f4@185.177.238.106:443?type=xhttp&host=tradingview.com&path=/jBKezBZjwJBFVAlyF&mode=auto&security=reality&fp=firefox&sni=www.tradingview.com&pbk=HpEjiHEFCqlIkJfhtdMlMBerod8y3RePnMX0AkLqkHc&sid=7001beb6e5140383&spx=/#🇦🇱 Албания
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@193.233.231.56:869?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh.vk.com&fp=random&pbk=lggRqXlpIE3Pirqc1G_CZUn3oITFtmzvYNvGsEdEcDA&sid=999999&type=tcp&headerType=none#🇷🇺 Россия
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@193.233.251.139:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh.vk.com&fp=random&pbk=lggRqXlpIE3Pirqc1G_CZUn3oITFtmzvYNvGsEdEcDA&sid=999999&spx=%2F&type=tcp#🇷🇺 Double VPN
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@103.68.110.74:695?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=bEJ_FRtl_fL90waFc_KrH4kRBXClFm32kudB4zbQvnc&type=tcp#🇵🇱 Польша
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@2.27.27.65:841?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=NUt3FJLUDBJmms0IvV6Y4BpuPGsMZU2ESXsbQs4awns&type=tcp#🇯🇵 Япония
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@stream-1.24streamers.ru:449?encryption=none&security=tls&type=xhttp&sni=stream-1.24streamers.ru&alpn=h2&fp=chrome&mode=auto&path=%2Fapi#🇯🇵 Япония (🔥 Новые блокировки)
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@144.31.130.106:841?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=1tnEBVkjwIXD1vZo6bUo0h6yZI11X7b4bq1cTGIDlU4&type=tcp#🇹🇷 Турция
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@213.155.13.104:529?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=uUBSD8_oKd9acHbM03-elebwOJNjiPSVKSVrRtrtOEg&type=tcp&headerType=none#🇰🇿 Казахстан
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@lt.atlanta-internet.ru:449?type=ws&security=none&path=%2Fapi#🇱🇹 Литва (🔥 Новые блокировки)
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@2.27.27.162:731?type=ws&security=none&path=%2fapi#🇨🇳 Китай
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@62.60.232.34:952?type=ws&security=none&path=%2Fapi#🇭🇰 Гонконг
+vless://92d253ca-28af-47c7-9c42-09e40d96f77d@2.27.27.128:618?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amd.com&fp=random&pbk=KyjJ4C-ipw7xJg0brP-Mr2CV_6VGd1rJw8-g67hxyBg&type=tcp#🇦🇶 Антарктида
