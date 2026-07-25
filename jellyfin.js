@@ -7,16 +7,17 @@
         host: 'https://ru.mir-kino.pp.ru',
         username: 'rrrrrrrggsloooo@gmail.com',
         password: 'DimaPolina2905',
-        clientName: 'Lampa Client',
-        deviceId: 'lampa_jellyfin_device',
+        clientName: 'Lampa',
+        deviceId: 'lampa_device_id_1337',
         version: '1.0.0'
     };
 
     let authData = { token: null, userId: null };
 
-    function getAuthHeader() {
-        let header = `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
-        if (authData.token) header += `, Token="${authData.token}"`;
+    // Исправленный заголовок Jellyfin (без лишних кавычек в значениях!)
+    function getEmbyHeader() {
+        let header = `MediaBrowser Client=${CONFIG.clientName}, Device=${CONFIG.clientName}, DeviceId=${CONFIG.deviceId}, Version=${CONFIG.version}`;
+        if (authData.token) header += `, Token=${authData.token}`;
         return header;
     }
 
@@ -24,34 +25,64 @@
         if (authData.token && authData.userId) return callback(true);
 
         const url = `${CONFIG.host}/Users/AuthenticateByName`;
-        const authHeader = getAuthHeader();
+        const headerValue = getEmbyHeader();
 
         $.ajax({
             url: url,
             type: 'POST',
             contentType: 'application/json',
-            headers: { 
-                'X-Emby-Authorization': authHeader,
-                'Authorization': authHeader
+            dataType: 'json',
+            headers: {
+                'X-Emby-Authorization': headerValue,
+                'Authorization': headerValue
             },
-            data: JSON.stringify({ 
-                Username: CONFIG.username, 
-                Pw: CONFIG.password,
-                Password: CONFIG.password 
+            data: JSON.stringify({
+                Username: CONFIG.username,
+                Pw: CONFIG.password
             }),
             success: function (res) {
                 if (res && res.AccessToken) {
                     authData.token = res.AccessToken;
-                    authData.userId = res.User.Id;
+                    authData.userId = res.User ? res.User.Id : (res.SessionInfo ? res.SessionInfo.UserId : null);
                     callback(true);
                 } else {
-                    Lampa.Noty.show('Мир Кино: неверный ответ авторизации');
+                    Lampa.Noty.show('Мир Кино: Нет токена в ответе');
                     callback(false);
                 }
             },
             error: function (xhr) {
-                Lampa.Noty.show('Ошибка авторизации Мир Кино: ' + xhr.status);
-                callback(false);
+                // Если 401/400 — пробуем альтернативный метод передачи данных
+                if (xhr.status === 401 || xhr.status === 400) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        headers: {
+                            'X-Emby-Authorization': headerValue
+                        },
+                        data: JSON.stringify({
+                            Username: CONFIG.username,
+                            Password: CONFIG.password
+                        }),
+                        success: function (res2) {
+                            if (res2 && res2.AccessToken) {
+                                authData.token = res2.AccessToken;
+                                authData.userId = res2.User ? res2.User.Id : null;
+                                callback(true);
+                            } else {
+                                Lampa.Noty.show('Ошибка авторизации 401');
+                                callback(false);
+                            }
+                        },
+                        error: function () {
+                            Lampa.Noty.show('Мир Кино: 401 Неверный логин/пароль');
+                            callback(false);
+                        }
+                    });
+                } else {
+                    Lampa.Noty.show('Ошибка соединения: ' + xhr.status);
+                    callback(false);
+                }
             }
         });
     }
@@ -67,6 +98,9 @@
                 url: url,
                 type: 'GET',
                 dataType: 'json',
+                headers: {
+                    'X-Emby-Authorization': getEmbyHeader()
+                },
                 success: function (data) {
                     const results = (data && data.SearchHints) ? data.SearchHints : [];
                     callback(results);
@@ -82,16 +116,13 @@
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
-        // 1. Поиск по русскому названию
         searchHints(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
-            // 2. Поиск по оригинальному названию
             if (titleEn && titleEn !== titleRu) {
                 searchHints(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
 
-                    // 3. Поиск по первому слову
                     const firstWord = titleRu.split(' ')[0];
                     searchHints(firstWord, callback);
                 });
@@ -142,8 +173,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_v6) return;
-        window.jellyfin_mirkino_v6 = true;
+        if (window.jellyfin_mirkino_v7) return;
+        window.jellyfin_mirkino_v7 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
