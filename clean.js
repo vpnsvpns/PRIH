@@ -201,7 +201,7 @@
         _0x527cb2();
       })) : (window.nwsClient[_0x17917c] = new NativeWsClient(_0x57f620.nws, {
         "autoReconnect": true
-      }), window.nwsClient[_0x17917c].on("Connected", function (_0x538ad9) {
+      }), window.nwsClient[_0x17917c].on("Connected", function () {
         window.rch_nws[_0x17917c].Registry(window.nwsClient[_0x17917c], function () {
           _0x527cb2();
         });
@@ -1711,7 +1711,7 @@
         },
         "helper_online_file": {
           "ru": "Удерживайте клавишу \"ОК\" для вызова контекстного меню",
-          "uk": "Утримуйте клавішу \"ОК\" для виклику контекстного меню",
+          "uk": "Утримуйте клавишу \"ОК\" для вызова контекстного меню",
           "en": "Hold the \"OK\" key to bring up the context menu",
           "zh": "按住\"确定\"键调出上下文菜单"
         },
@@ -1735,7 +1735,7 @@
         },
         "lampac_voice_error": {
           "ru": "Возникла ошибка",
-          "uk": "Виникла помилка",
+          "uk": "Виникала помилка",
           "en": "An error has occurred",
           "zh": "发生了错误"
         },
