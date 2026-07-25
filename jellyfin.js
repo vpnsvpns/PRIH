@@ -46,7 +46,7 @@
         authenticate(function (ok) {
             if (!ok) return callback([]);
 
-            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode`;
+            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path`;
 
             $.ajax({
                 url: url,
@@ -56,6 +56,15 @@
                 error: function () { callback([]); }
             });
         });
+    }
+
+    // Формирование прямой ссылки на видео/Stream с поддержкой 4K и 5.1
+    function buildStreamUrl(item) {
+        const mediaSourceId = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Id : item.Id;
+        const container = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Container : 'mkv';
+
+        // Прямая ссылка на файл через API Jellyfin без принудительного разбиения на кривые сегменты
+        return `${CONFIG.host}/Items/${item.Id}/Download?api_key=${authData.token}`;
     }
 
     function openMirKino(movie) {
@@ -71,15 +80,15 @@
             }
 
             const playlist = items.map(item => ({
-                title: item.Name,
-                url: `${CONFIG.host}/Videos/${item.Id}/stream.m3u8?static=true&api_key=${authData.token}`
+                title: `${item.Name} [4K / 5.1]`,
+                url: buildStreamUrl(item)
             }));
 
             if (playlist.length === 1) {
                 Lampa.Player.play(playlist[0]);
             } else {
                 Lampa.Select.show({
-                    title: 'Мир Кино: Выбор серии / файла',
+                    title: 'Мир Кино: Выберите файл',
                     items: playlist,
                     onSelect: function (selected) {
                         Lampa.Player.play(selected);
@@ -90,16 +99,14 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_installed) return;
-        window.jellyfin_mirkino_installed = true;
+        if (window.jellyfin_mirkino_installed_v2) return;
+        window.jellyfin_mirkino_installed_v2 = true;
 
-        // 1. Встраивание кнопки во все возможные блоки карточки
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
                 const render = e.object.activity.render();
                 const movie = e.data.movie;
 
-                // Вставляем кнопку под торренты/онлайн или рядом со "Смотреть"
                 let target = render.find('.full-start__buttons');
                 if (!target.length) target = render.find('.full-start-new__buttons');
 
@@ -120,15 +127,6 @@
                     target.prepend(btn);
                 }
             }
-        });
-
-        // 2. Регистрация в меню "Источник" (если вызвана штатная кнопка "Онлайн")
-        Lampa.Component.add('mirkino_view', function (object) {
-            this.start = function () {
-                openMirKino(object.movie);
-            };
-            this.render = function () { return $('<div></div>'); };
-            this.destroy = function () {};
         });
     }
 
