@@ -10,16 +10,11 @@
         version: '1.0.0'
     };
 
-    let authData = {
-        token: null,
-        userId: null
-    };
+    let authData = { token: null, userId: null };
 
     function getAuthHeader() {
         let header = `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
-        if (authData.token) {
-            header += `, Token="${authData.token}"`;
-        }
+        if (authData.token) header += `, Token="${authData.token}"`;
         return header;
     }
 
@@ -61,22 +56,49 @@
         });
     }
 
+    function startPlay(movieTitle) {
+        Lampa.Loading.start(function () { Lampa.Loading.stop(); });
+
+        searchMedia(movieTitle, function (items) {
+            Lampa.Loading.stop();
+
+            if (!items || !items.length) {
+                Lampa.Noty.show('На Мир Кино ничего не найдено');
+                return;
+            }
+
+            const playlist = items.map(item => ({
+                title: item.Name,
+                url: `${CONFIG.host}/Videos/${item.Id}/stream.m3u8?static=true&api_key=${authData.token}`
+            }));
+
+            if (playlist.length === 1) {
+                Lampa.Player.play(playlist[0]);
+            } else {
+                Lampa.Select.show({
+                    title: 'Мир Кино: Выбор серии / файла',
+                    items: playlist,
+                    onSelect: function (selected) {
+                        Lampa.Player.play(selected);
+                    }
+                });
+            }
+        });
+    }
+
     function initPlugin() {
         if (window.jellyfin_mirkino_injected) return;
         window.jellyfin_mirkino_injected = true;
 
-        // Всплывашка при загрузке Lampa для проверки работы
-        if (window.Lampa && Lampa.Noty) {
-            Lampa.Noty.show('Мир Кино: Плагин подключен!');
-        }
-
-        // Слушатель открытия карточки фильма
+        // Перехват отрисовки карточки фильма (кнопка на главной панели и интеграция в меню)
         Lampa.Listener.follow('full', function (e) {
-            if (e.type === 'complite' || e.type === 'build') {
+            if (e.type === 'complite') {
                 const render = e.object.activity.render();
-                const targetContainer = render.find('.full-start__buttons');
+                const movieTitle = e.data.movie.title || e.data.movie.name;
 
-                if (targetContainer.length && !targetContainer.find('.button--mirkino').length) {
+                // 1. Добавляем отдельную кнопку "Мир Кино" рядом со "Смотреть"
+                const buttonsContainer = render.find('.full-start__buttons');
+                if (buttonsContainer.length && !buttonsContainer.find('.button--mirkino').length) {
                     const btn = $(`
                         <div class="full-start__button selector button--mirkino">
                             <svg height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
@@ -87,38 +109,19 @@
                     `);
 
                     btn.on('hover:enter click', function () {
-                        const movieTitle = e.data.movie.title || e.data.movie.name;
-                        Lampa.Loading.start(function () { Lampa.Loading.stop(); });
-
-                        searchMedia(movieTitle, function (items) {
-                            Lampa.Loading.stop();
-
-                            if (!items || !items.length) {
-                                Lampa.Noty.show('Не найдено на Мир Кино');
-                                return;
-                            }
-
-                            const playlist = items.map(item => ({
-                                title: item.Name,
-                                url: `${CONFIG.host}/Videos/${item.Id}/stream.m3u8?static=true&api_key=${authData.token}`
-                            }));
-
-                            if (playlist.length === 1) {
-                                Lampa.Player.play(playlist[0]);
-                            } else {
-                                Lampa.Select.show({
-                                    title: 'Мир Кино: Серии / Файлы',
-                                    items: playlist,
-                                    onSelect: function (selected) {
-                                        Lampa.Player.play(selected);
-                                    }
-                                });
-                            }
-                        });
+                        startPlay(movieTitle);
                     });
 
-                    targetContainer.append(btn);
+                    buttonsContainer.prepend(btn);
                 }
+            }
+        });
+
+        // 2. Добавляем "Мир Кино" в список выпадающего меню "Источник"
+        Lampa.Listener.follow('activity', function (e) {
+            if (e.type === 'start' && e.object.component === 'mod_online') {
+                // Если вызван компонент онлайн-источников
+                startPlay(e.object.movie.title || e.object.movie.name);
             }
         });
     }
