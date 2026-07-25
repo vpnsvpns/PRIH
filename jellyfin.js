@@ -23,13 +23,13 @@
     function authenticate(callback) {
         if (authData.token && authData.userId) return callback(true);
 
-        $.ajax({
-            url: `${CONFIG.host}/Users/AuthenticateByName`,
-            type: 'POST',
-            contentType: 'application/json',
-            headers: { 'X-Emby-Authorization': getAuthHeader() },
-            data: JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password }),
-            success: function (res) {
+        const network = new Lampa.Reguest();
+        const url = `${CONFIG.host}/Users/AuthenticateByName`;
+        const postData = JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password });
+
+        network.native(url, function (response) {
+            try {
+                const res = typeof response === 'string' ? JSON.parse(response) : response;
                 if (res && res.AccessToken) {
                     authData.token = res.AccessToken;
                     authData.userId = res.User.Id;
@@ -37,8 +37,16 @@
                 } else {
                     callback(false);
                 }
-            },
-            error: function () { callback(false); }
+            } catch (e) {
+                callback(false);
+            }
+        }, function () {
+            callback(false);
+        }, postData, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Emby-Authorization': getAuthHeader()
+            }
         });
     }
 
@@ -46,48 +54,58 @@
         authenticate(function (ok) {
             if (!ok) return callback([]);
 
+            const network = new Lampa.Reguest();
             const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path`;
 
-            $.ajax({
-                url: url,
-                type: 'GET',
-                headers: { 'X-Emby-Authorization': getAuthHeader() },
-                success: function (data) { callback(data.Items || []); },
-                error: function () { callback([]); }
+            network.native(url, function (response) {
+                try {
+                    const data = typeof response === 'string' ? JSON.parse(response) : response;
+                    callback(data.Items || []);
+                } catch (e) {
+                    callback([]);
+                }
+            }, function () {
+                callback([]);
+            }, false, {
+                headers: {
+                    'X-Emby-Authorization': getAuthHeader()
+                }
             });
         });
     }
 
-    // Каскадный поиск: русское название -> оригинальное название -> очищенный запрос
     function smartSearch(movie, callback) {
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
+        // Попытка 1: По русскому названию
         requestItems(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
+            // Попытка 2: По оригинальному названию
             if (titleEn && titleEn !== titleRu) {
                 requestItems(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
-
-                    // Убираем цифры и спецсимволы, ищем по базовому слову
-                    const cleanTitle = titleRu.replace(/[^\w\sа-яА-ЯёЁ]/gi, '').trim();
-                    requestItems(cleanTitle, callback);
+                    
+                    // Попытка 3: Первое слово названия
+                    const firstWord = titleRu.split(' ')[0];
+                    requestItems(firstWord, callback);
                 });
             } else {
-                const cleanTitle = titleRu.replace(/[^\w\sа-яА-ЯёЁ]/gi, '').trim();
-                requestItems(cleanTitle, callback);
+                const firstWord = titleRu.split(' ')[0];
+                requestItems(firstWord, callback);
             }
         });
     }
 
-    // Прямая отдача файла для поддержки 4K и 5.1 без тупящего HLS-транскодинга
     function buildStreamUrl(item) {
         return `${CONFIG.host}/Items/${item.Id}/Download?api_key=${authData.token}`;
     }
 
     function openMirKino(movie) {
-        Lampa.Loading.start(function () { Lampa.Loading.stop(); });
+        Lampa.Loading.start(function () {
+            Lampa.Loading.stop();
+        });
 
         smartSearch(movie, function (items) {
             Lampa.Loading.stop();
@@ -117,8 +135,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_smart_v3) return;
-        window.jellyfin_mirkino_smart_v3 = true;
+        if (window.jellyfin_mirkino_final_v4) return;
+        window.jellyfin_mirkino_final_v4 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
