@@ -15,38 +15,47 @@
     let authData = { token: null, userId: null };
 
     function getAuthHeader() {
-        return `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
+        let header = `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
+        if (authData.token) header += `, Token="${authData.token}"`;
+        return header;
     }
 
     function authenticate(callback) {
         if (authData.token && authData.userId) return callback(true);
 
         const url = `${CONFIG.host}/Users/AuthenticateByName`;
-        
+        const authHeader = getAuthHeader();
+
         $.ajax({
             url: url,
             type: 'POST',
             contentType: 'application/json',
-            headers: { 'X-Emby-Authorization': getAuthHeader() },
-            data: JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password }),
+            headers: { 
+                'X-Emby-Authorization': authHeader,
+                'Authorization': authHeader
+            },
+            data: JSON.stringify({ 
+                Username: CONFIG.username, 
+                Pw: CONFIG.password,
+                Password: CONFIG.password 
+            }),
             success: function (res) {
                 if (res && res.AccessToken) {
                     authData.token = res.AccessToken;
                     authData.userId = res.User.Id;
                     callback(true);
                 } else {
-                    Lampa.Noty.show('Ошибка авторизации на Мир Кино');
+                    Lampa.Noty.show('Мир Кино: неверный ответ авторизации');
                     callback(false);
                 }
             },
             error: function (xhr) {
-                Lampa.Noty.show('Ошибка подключения к Мир Кино: ' + xhr.status);
+                Lampa.Noty.show('Ошибка авторизации Мир Кино: ' + xhr.status);
                 callback(false);
             }
         });
     }
 
-    // Использование родного эндпоинта Jellyfin Search Hints
     function searchHints(query, callback) {
         authenticate(function (ok) {
             if (!ok) return callback([]);
@@ -73,16 +82,16 @@
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
-        // 1. Поисковый запрос по русскому названию
+        // 1. Поиск по русскому названию
         searchHints(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
-            // 2. Поисковый запрос по английскому/оригинальному названию
+            // 2. Поиск по оригинальному названию
             if (titleEn && titleEn !== titleRu) {
                 searchHints(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
 
-                    // 3. Поиск по первому слову (например, просто "Моана")
+                    // 3. Поиск по первому слову
                     const firstWord = titleRu.split(' ')[0];
                     searchHints(firstWord, callback);
                 });
@@ -93,7 +102,6 @@
         });
     }
 
-    // Прямая отдача файла в 4K с многоканальным звуком
     function buildStreamUrl(itemId) {
         return `${CONFIG.host}/Items/${itemId}/Download?api_key=${authData.token}`;
     }
@@ -134,8 +142,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_hints_v5) return;
-        window.jellyfin_mirkino_hints_v5 = true;
+        if (window.jellyfin_mirkino_v6) return;
+        window.jellyfin_mirkino_v6 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
