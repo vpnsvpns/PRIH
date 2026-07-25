@@ -9,9 +9,19 @@
         userId: '29cc619b39014b1aa477d4f90eda9f0d'
     };
 
+    function extractYear(movie) {
+        if (movie.year) return parseInt(movie.year, 10);
+        const dateStr = movie.release_date || movie.first_air_date || '';
+        if (dateStr && dateStr.length >= 4) {
+            const parsed = parseInt(dateStr.substring(0, 4), 10);
+            if (!isNaN(parsed)) return parsed;
+        }
+        return null;
+    }
+
     function searchMedia(query, callback) {
         const cleanQuery = query.trim();
-        const url = `${CONFIG.host}/Users/${CONFIG.userId}/Items?SearchTerm=${encodeURIComponent(cleanQuery)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path&api_key=${CONFIG.apiKey}`;
+        const url = `${CONFIG.host}/Users/${CONFIG.userId}/Items?SearchTerm=${encodeURIComponent(cleanQuery)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path,ProductionYear&api_key=${CONFIG.apiKey}`;
 
         $.ajax({
             url: url,
@@ -68,7 +78,18 @@
                 return;
             }
 
-            // Автоматически берем первый лучший файл из результатов
+            const targetYear = extractYear(movie);
+
+            // Если найдено несколько вариантов, сортируем по близости года выпуска
+            if (targetYear && items.length > 1) {
+                items.sort((a, b) => {
+                    const diffA = a.ProductionYear ? Math.abs(a.ProductionYear - targetYear) : 999;
+                    const diffB = b.ProductionYear ? Math.abs(b.ProductionYear - targetYear) : 999;
+                    return diffA - diffB;
+                });
+            }
+
+            // Выбираем самый подходящий файл
             const targetItem = items[0];
             let name = targetItem.Name;
 
@@ -83,14 +104,13 @@
                 url: buildStreamUrl(targetItem)
             };
 
-            // Запуск сразу без показа диалоговых окон
             Lampa.Player.play(streamData);
         });
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_auto_v12) return;
-        window.jellyfin_mirkino_auto_v12 = true;
+        if (window.jellyfin_mirkino_yearfilter_v13) return;
+        window.jellyfin_mirkino_yearfilter_v13 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
