@@ -5,110 +5,25 @@
 
     const CONFIG = {
         host: 'https://ru.mir-kino.pp.ru',
-        username: 'rrrrrrrggsloooo@gmail.com',
-        password: 'DimaPolina2905',
-        clientName: 'Lampa',
-        deviceId: 'lampa_device_id_1337',
-        version: '1.0.0'
+        apiKey: '411d231778854557b3e5c45da78ec5e8',
+        userId: '29cc619b39014b1aa477d4f90eda9f0d'
     };
 
-    let authData = { token: null, userId: null };
-
-    // Исправленный заголовок Jellyfin (без лишних кавычек в значениях!)
-    function getEmbyHeader() {
-        let header = `MediaBrowser Client=${CONFIG.clientName}, Device=${CONFIG.clientName}, DeviceId=${CONFIG.deviceId}, Version=${CONFIG.version}`;
-        if (authData.token) header += `, Token=${authData.token}`;
-        return header;
-    }
-
-    function authenticate(callback) {
-        if (authData.token && authData.userId) return callback(true);
-
-        const url = `${CONFIG.host}/Users/AuthenticateByName`;
-        const headerValue = getEmbyHeader();
+    function searchMedia(query, callback) {
+        const cleanQuery = query.trim();
+        const url = `${CONFIG.host}/Users/${CONFIG.userId}/Items?SearchTerm=${encodeURIComponent(cleanQuery)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path&api_key=${CONFIG.apiKey}`;
 
         $.ajax({
             url: url,
-            type: 'POST',
-            contentType: 'application/json',
+            type: 'GET',
             dataType: 'json',
-            headers: {
-                'X-Emby-Authorization': headerValue,
-                'Authorization': headerValue
+            success: function (data) {
+                const results = (data && data.Items) ? data.Items : [];
+                callback(results);
             },
-            data: JSON.stringify({
-                Username: CONFIG.username,
-                Pw: CONFIG.password
-            }),
-            success: function (res) {
-                if (res && res.AccessToken) {
-                    authData.token = res.AccessToken;
-                    authData.userId = res.User ? res.User.Id : (res.SessionInfo ? res.SessionInfo.UserId : null);
-                    callback(true);
-                } else {
-                    Lampa.Noty.show('Мир Кино: Нет токена в ответе');
-                    callback(false);
-                }
-            },
-            error: function (xhr) {
-                // Если 401/400 — пробуем альтернативный метод передачи данных
-                if (xhr.status === 401 || xhr.status === 400) {
-                    $.ajax({
-                        url: url,
-                        type: 'POST',
-                        contentType: 'application/json',
-                        headers: {
-                            'X-Emby-Authorization': headerValue
-                        },
-                        data: JSON.stringify({
-                            Username: CONFIG.username,
-                            Password: CONFIG.password
-                        }),
-                        success: function (res2) {
-                            if (res2 && res2.AccessToken) {
-                                authData.token = res2.AccessToken;
-                                authData.userId = res2.User ? res2.User.Id : null;
-                                callback(true);
-                            } else {
-                                Lampa.Noty.show('Ошибка авторизации 401');
-                                callback(false);
-                            }
-                        },
-                        error: function () {
-                            Lampa.Noty.show('Мир Кино: 401 Неверный логин/пароль');
-                            callback(false);
-                        }
-                    });
-                } else {
-                    Lampa.Noty.show('Ошибка соединения: ' + xhr.status);
-                    callback(false);
-                }
+            error: function () {
+                callback([]);
             }
-        });
-    }
-
-    function searchHints(query, callback) {
-        authenticate(function (ok) {
-            if (!ok) return callback([]);
-
-            const cleanQuery = query.trim();
-            const url = `${CONFIG.host}/Search/Hints?searchTerm=${encodeURIComponent(cleanQuery)}&userId=${authData.userId}&limit=10&api_key=${authData.token}`;
-
-            $.ajax({
-                url: url,
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'X-Emby-Authorization': getEmbyHeader()
-                },
-                success: function (data) {
-                    const results = (data && data.SearchHints) ? data.SearchHints : [];
-                    callback(results);
-                },
-                error: function () {
-                    callback([]);
-                }
-            });
         });
     }
 
@@ -116,25 +31,28 @@
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
-        searchHints(titleRu, function (items) {
+        // 1. Поиск по русскому названию
+        searchMedia(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
+            // 2. Поиск по оригинальному названию
             if (titleEn && titleEn !== titleRu) {
-                searchHints(titleEn, function (itemsEn) {
+                searchMedia(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
 
+                    // 3. Поиск по первому слову
                     const firstWord = titleRu.split(' ')[0];
-                    searchHints(firstWord, callback);
+                    searchMedia(firstWord, callback);
                 });
             } else {
                 const firstWord = titleRu.split(' ')[0];
-                searchHints(firstWord, callback);
+                searchMedia(firstWord, callback);
             }
         });
     }
 
     function buildStreamUrl(itemId) {
-        return `${CONFIG.host}/Items/${itemId}/Download?api_key=${authData.token}`;
+        return `${CONFIG.host}/Items/${itemId}/Download?api_key=${CONFIG.apiKey}`;
     }
 
     function openMirKino(movie) {
@@ -151,10 +69,9 @@
             }
 
             const playlist = items.map(item => {
-                const id = item.ItemId || item.Id;
                 return {
                     title: `${item.Name} [4K / 5.1]`,
-                    url: buildStreamUrl(id)
+                    url: buildStreamUrl(item.Id)
                 };
             });
 
@@ -173,8 +90,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_v7) return;
-        window.jellyfin_mirkino_v7 = true;
+        if (window.jellyfin_mirkino_ready_v10) return;
+        window.jellyfin_mirkino_ready_v10 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
