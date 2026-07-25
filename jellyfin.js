@@ -2,7 +2,7 @@
     'use strict';
 
     const CONFIG = {
-        host: 'https://mir-kino.pp.ru',
+        host: 'https://ru.mir-kino.pp.ru',
         username: 'rrrrrrrggsloooo@gmail.com',
         password: 'DimaPolina2905',
         clientName: 'Lampa Client',
@@ -15,7 +15,6 @@
         userId: null
     };
 
-    // Формирование обязательного заголовка Jellyfin API
     function getAuthHeader() {
         let header = `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
         if (authData.token) {
@@ -24,26 +23,22 @@
         return header;
     }
 
-    // Авторизация на сервере Jellyfin
     function authenticate(callback) {
         if (authData.token && authData.userId) {
             return callback(true);
         }
 
-        const url = `${CONFIG.host}/Users/AuthenticateByName`;
-        const body = JSON.stringify({
-            Username: CONFIG.username,
-            Pw: CONFIG.password
-        });
-
         $.ajax({
-            url: url,
+            url: `${CONFIG.host}/Users/AuthenticateByName`,
             type: 'POST',
             contentType: 'application/json',
             headers: {
                 'X-Emby-Authorization': getAuthHeader()
             },
-            data: body,
+            data: JSON.stringify({
+                Username: CONFIG.username,
+                Pw: CONFIG.password
+            }),
             success: function (response) {
                 if (response && response.AccessToken) {
                     authData.token = response.AccessToken;
@@ -53,19 +48,17 @@
                     callback(false);
                 }
             },
-            error: function (err) {
-                console.error('Jellyfin Auth Error:', err);
+            error: function () {
                 callback(false);
             }
         });
     }
 
-    // Поиск элементов на сервере
-    function searchItems(query, callback) {
-        authenticate(function (success) {
-            if (!success) return callback([]);
+    function searchMedia(title, callback) {
+        authenticate(function (ok) {
+            if (!ok) return callback([]);
 
-            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode`;
+            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(title)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode`;
 
             $.ajax({
                 url: url,
@@ -83,50 +76,64 @@
         });
     }
 
-    // Получение прямых ссылок на воспроизведение
-    function getStreamUrl(itemId) {
-        return `${CONFIG.host}/Videos/${itemId}/stream.m3u8?static=true&api_key=${authData.token}`;
-    }
-
-    // Регистрация источника в Lampa
-    function JellyfinSource() {
-        this.search = function (object, callback) {
-            const query = object.search || object.title;
-            searchItems(query, function (items) {
-                const results = items.map(function (item) {
-                    return {
-                        name: item.Name,
-                        title: item.Name,
-                        original_title: item.OriginalTitle || item.Name,
-                        year: item.ProductionYear || '',
-                        quality: item.Container || 'HD',
-                        url: getStreamUrl(item.Id),
-                        timeline: item.UserData ? item.UserData.PlaybackPositionTicks : 0
-                    };
-                });
-                callback(results);
-            });
-        };
-    }
-
-    // Инициализация модуля в интерфейсе Lampa
     function startPlugin() {
-        if (window.jellyfin_mirkino_plugin) return;
-        window.jellyfin_mirkino_plugin = true;
+        if (window.jellyfin_mirkino_loaded) return;
+        window.jellyfin_mirkino_loaded = true;
 
-        // Добавляем новый источник во вкладку онлайн-просмотра
-        Lampa.Component.add('jellyfin_mirkino', JellyfinSource);
-
+        // Встраивание кнопки в панель источников карточки фильма
         Lampa.Listener.follow('full', function (e) {
-            if (e.type === 'start') {
-                const button = `<div class="full-start__button selector button--jellyfin">
-                    <svg height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
-                        <path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5h-13L12 6.5z"/>
-                    </svg>
-                    <span>Мир Кино (Jellyfin)</span>
-                </div>`;
+            if (e.type === 'complite') {
+                const render = e.object.activity.render();
+                const container = render.find('.full-start__buttons');
 
-                e.object.activity.render().find('.full-start__buttons').append(button);
+                // Проверяем, чтобы не дублировать кнопку
+                if (container.find('.button--mirkino').length === 0) {
+                    const btn = $(`
+                        <div class="full-start__button selector button--mirkino">
+                            <svg height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+                                <path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5h-13L12 6.5z"/>
+                            </svg>
+                            <span>Мир Кино</span>
+                        </div>
+                    `);
+
+                    btn.on('hover:enter', function () {
+                        const movieTitle = e.data.movie.title || e.data.movie.name;
+                        
+                        Lampa.Loading.start(function () {
+                            Lampa.Loading.stop();
+                        });
+
+                        searchMedia(movieTitle, function (items) {
+                            Lampa.Loading.stop();
+
+                            if (!items.length) {
+                                Lampa.Noty.show('Ничего не найдено на Мир Кино');
+                                return;
+                            }
+
+                            // Если найден один файл — запускаем, если несколько — выводим список
+                            const playlist = items.map(item => ({
+                                title: item.Name,
+                                url: `${CONFIG.host}/Videos/${item.Id}/stream.m3u8?static=true&api_key=${authData.token}`
+                            }));
+
+                            if (playlist.length === 1) {
+                                Lampa.Player.play(playlist[0]);
+                            } else {
+                                Lampa.Select.show({
+                                    title: 'Мир Кино: Выберите файл',
+                                    items: playlist,
+                                    onSelect: function (selected) {
+                                        Lampa.Player.play(selected);
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                    container.append(btn);
+                }
             }
         });
     }
