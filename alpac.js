@@ -25,7 +25,7 @@
 
     return fetch('/transcoding/batch', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({ 'Content-Type': 'application/json' }, lampacAuthHeaders()),
       body: JSON.stringify({ episodes: episodes, subtitles: true })
     })
     .then(function(resp) {
@@ -68,7 +68,7 @@
       stopBatch();
       _heartbeatTimer = setInterval(function() {
         if (_batchId) {
-          fetch('/transcoding/batch/' + _batchId + '/heartbeat').catch(function(){});
+          fetch('/transcoding/batch/' + _batchId + '/heartbeat', { headers: lampacAuthHeaders() }).catch(function(){});
         }
       }, 10000);
 
@@ -267,10 +267,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
       if (url == 'eval') {
         console.log('RCH', url, data);
-        result(eval(data));
+        result(new Function(data)());
       } else if (url == 'evalrun') {
         console.log('RCH', url, data);
-        eval(data);
+        new Function(data)();
       } else if (url == 'ping') {
         result('pong');
       } else {
