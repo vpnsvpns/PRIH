@@ -42,7 +42,7 @@
         });
     }
 
-    function searchMedia(query, callback) {
+    function requestItems(query, callback) {
         authenticate(function (ok) {
             if (!ok) return callback([]);
 
@@ -58,20 +58,38 @@
         });
     }
 
-    // Формирование прямой ссылки на видео/Stream с поддержкой 4K и 5.1
-    function buildStreamUrl(item) {
-        const mediaSourceId = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Id : item.Id;
-        const container = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Container : 'mkv';
+    // Каскадный поиск: русское название -> оригинальное название -> очищенный запрос
+    function smartSearch(movie, callback) {
+        const titleRu = movie.title || movie.name || '';
+        const titleEn = movie.original_title || movie.original_name || '';
 
-        // Прямая ссылка на файл через API Jellyfin без принудительного разбиения на кривые сегменты
+        requestItems(titleRu, function (items) {
+            if (items && items.length) return callback(items);
+
+            if (titleEn && titleEn !== titleRu) {
+                requestItems(titleEn, function (itemsEn) {
+                    if (itemsEn && itemsEn.length) return callback(itemsEn);
+
+                    // Убираем цифры и спецсимволы, ищем по базовому слову
+                    const cleanTitle = titleRu.replace(/[^\w\sа-яА-ЯёЁ]/gi, '').trim();
+                    requestItems(cleanTitle, callback);
+                });
+            } else {
+                const cleanTitle = titleRu.replace(/[^\w\sа-яА-ЯёЁ]/gi, '').trim();
+                requestItems(cleanTitle, callback);
+            }
+        });
+    }
+
+    // Прямая отдача файла для поддержки 4K и 5.1 без тупящего HLS-транскодинга
+    function buildStreamUrl(item) {
         return `${CONFIG.host}/Items/${item.Id}/Download?api_key=${authData.token}`;
     }
 
     function openMirKino(movie) {
-        const title = movie.title || movie.name;
         Lampa.Loading.start(function () { Lampa.Loading.stop(); });
 
-        searchMedia(title, function (items) {
+        smartSearch(movie, function (items) {
             Lampa.Loading.stop();
 
             if (!items || !items.length) {
@@ -99,8 +117,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_installed_v2) return;
-        window.jellyfin_mirkino_installed_v2 = true;
+        if (window.jellyfin_mirkino_smart_v3) return;
+        window.jellyfin_mirkino_smart_v3 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
