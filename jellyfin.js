@@ -15,60 +15,55 @@
     let authData = { token: null, userId: null };
 
     function getAuthHeader() {
-        let header = `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
-        if (authData.token) header += `, Token="${authData.token}"`;
-        return header;
+        return `MediaBrowser Client="${CONFIG.clientName}", Device="Lampa", DeviceId="${CONFIG.deviceId}", Version="${CONFIG.version}"`;
     }
 
     function authenticate(callback) {
         if (authData.token && authData.userId) return callback(true);
 
-        const network = new Lampa.Reguest();
         const url = `${CONFIG.host}/Users/AuthenticateByName`;
-        const postData = JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password });
-
-        network.native(url, function (response) {
-            try {
-                const res = typeof response === 'string' ? JSON.parse(response) : response;
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: { 'X-Emby-Authorization': getAuthHeader() },
+            data: JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password }),
+            success: function (res) {
                 if (res && res.AccessToken) {
                     authData.token = res.AccessToken;
                     authData.userId = res.User.Id;
                     callback(true);
                 } else {
+                    Lampa.Noty.show('Ошибка авторизации на Мир Кино');
                     callback(false);
                 }
-            } catch (e) {
+            },
+            error: function (xhr) {
+                Lampa.Noty.show('Ошибка подключения к Мир Кино: ' + xhr.status);
                 callback(false);
-            }
-        }, function () {
-            callback(false);
-        }, postData, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Emby-Authorization': getAuthHeader()
             }
         });
     }
 
-    function requestItems(query, callback) {
+    // Использование родного эндпоинта Jellyfin Search Hints
+    function searchHints(query, callback) {
         authenticate(function (ok) {
             if (!ok) return callback([]);
 
-            const network = new Lampa.Reguest();
-            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=MediaSources,Path`;
+            const cleanQuery = query.trim();
+            const url = `${CONFIG.host}/Search/Hints?searchTerm=${encodeURIComponent(cleanQuery)}&userId=${authData.userId}&limit=10&api_key=${authData.token}`;
 
-            network.native(url, function (response) {
-                try {
-                    const data = typeof response === 'string' ? JSON.parse(response) : response;
-                    callback(data.Items || []);
-                } catch (e) {
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    const results = (data && data.SearchHints) ? data.SearchHints : [];
+                    callback(results);
+                },
+                error: function () {
                     callback([]);
-                }
-            }, function () {
-                callback([]);
-            }, false, {
-                headers: {
-                    'X-Emby-Authorization': getAuthHeader()
                 }
             });
         });
@@ -78,28 +73,29 @@
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
-        // Попытка 1: По русскому названию
-        requestItems(titleRu, function (items) {
+        // 1. Поисковый запрос по русскому названию
+        searchHints(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
-            // Попытка 2: По оригинальному названию
+            // 2. Поисковый запрос по английскому/оригинальному названию
             if (titleEn && titleEn !== titleRu) {
-                requestItems(titleEn, function (itemsEn) {
+                searchHints(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
-                    
-                    // Попытка 3: Первое слово названия
+
+                    // 3. Поиск по первому слову (например, просто "Моана")
                     const firstWord = titleRu.split(' ')[0];
-                    requestItems(firstWord, callback);
+                    searchHints(firstWord, callback);
                 });
             } else {
                 const firstWord = titleRu.split(' ')[0];
-                requestItems(firstWord, callback);
+                searchHints(firstWord, callback);
             }
         });
     }
 
-    function buildStreamUrl(item) {
-        return `${CONFIG.host}/Items/${item.Id}/Download?api_key=${authData.token}`;
+    // Прямая отдача файла в 4K с многоканальным звуком
+    function buildStreamUrl(itemId) {
+        return `${CONFIG.host}/Items/${itemId}/Download?api_key=${authData.token}`;
     }
 
     function openMirKino(movie) {
@@ -115,16 +111,19 @@
                 return;
             }
 
-            const playlist = items.map(item => ({
-                title: `${item.Name} [4K / 5.1]`,
-                url: buildStreamUrl(item)
-            }));
+            const playlist = items.map(item => {
+                const id = item.ItemId || item.Id;
+                return {
+                    title: `${item.Name} [4K / 5.1]`,
+                    url: buildStreamUrl(id)
+                };
+            });
 
             if (playlist.length === 1) {
                 Lampa.Player.play(playlist[0]);
             } else {
                 Lampa.Select.show({
-                    title: 'Мир Кино: Выберите файл',
+                    title: 'Мир Кино: Результаты',
                     items: playlist,
                     onSelect: function (selected) {
                         Lampa.Player.play(selected);
@@ -135,8 +134,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_final_v4) return;
-        window.jellyfin_mirkino_final_v4 = true;
+        if (window.jellyfin_mirkino_hints_v5) return;
+        window.jellyfin_mirkino_hints_v5 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
