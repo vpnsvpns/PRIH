@@ -48,7 +48,6 @@
         });
     }
 
-    // Прямой стриминг файла без заголовков скачивания
     function buildStreamUrl(item) {
         const mediaSourceId = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Id : item.Id;
         const container = (item.MediaSources && item.MediaSources[0] && item.MediaSources[0].Container) ? item.MediaSources[0].Container : 'mkv';
@@ -69,37 +68,29 @@
                 return;
             }
 
-            const playlist = items.map(item => {
-                let name = item.Name;
-                if (item.MediaSources && item.MediaSources[0] && item.MediaSources[0].Path) {
-                    const path = item.MediaSources[0].Path;
-                    const fileName = path.split('\\').pop().split('/').pop();
-                    if (fileName) name = fileName;
-                }
+            // Автоматически берем первый лучший файл из результатов
+            const targetItem = items[0];
+            let name = targetItem.Name;
 
-                return {
-                    title: name,
-                    url: buildStreamUrl(item)
-                };
-            });
-
-            if (playlist.length === 1) {
-                Lampa.Player.play(playlist[0]);
-            } else {
-                Lampa.Select.show({
-                    title: 'Мир Кино: Выберите файл',
-                    items: playlist,
-                    onSelect: function (selected) {
-                        Lampa.Player.play(selected);
-                    }
-                });
+            if (targetItem.MediaSources && targetItem.MediaSources[0] && targetItem.MediaSources[0].Path) {
+                const path = targetItem.MediaSources[0].Path;
+                const fileName = path.split('\\').pop().split('/').pop();
+                if (fileName) name = fileName;
             }
+
+            const streamData = {
+                title: name,
+                url: buildStreamUrl(targetItem)
+            };
+
+            // Запуск сразу без показа диалоговых окон
+            Lampa.Player.play(streamData);
         });
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_stream_v11) return;
-        window.jellyfin_mirkino_stream_v11 = true;
+        if (window.jellyfin_mirkino_auto_v12) return;
+        window.jellyfin_mirkino_auto_v12 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
