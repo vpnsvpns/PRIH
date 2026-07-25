@@ -31,16 +31,13 @@
         const titleRu = movie.title || movie.name || '';
         const titleEn = movie.original_title || movie.original_name || '';
 
-        // 1. Поиск по русскому названию
         searchMedia(titleRu, function (items) {
             if (items && items.length) return callback(items);
 
-            // 2. Поиск по оригинальному названию
             if (titleEn && titleEn !== titleRu) {
                 searchMedia(titleEn, function (itemsEn) {
                     if (itemsEn && itemsEn.length) return callback(itemsEn);
 
-                    // 3. Поиск по первому слову
                     const firstWord = titleRu.split(' ')[0];
                     searchMedia(firstWord, callback);
                 });
@@ -51,8 +48,12 @@
         });
     }
 
-    function buildStreamUrl(itemId) {
-        return `${CONFIG.host}/Items/${itemId}/Download?api_key=${CONFIG.apiKey}`;
+    // Прямой стриминг файла без заголовков скачивания
+    function buildStreamUrl(item) {
+        const mediaSourceId = (item.MediaSources && item.MediaSources[0]) ? item.MediaSources[0].Id : item.Id;
+        const container = (item.MediaSources && item.MediaSources[0] && item.MediaSources[0].Container) ? item.MediaSources[0].Container : 'mkv';
+        
+        return `${CONFIG.host}/Videos/${item.Id}/stream.${container}?static=true&mediaSourceId=${mediaSourceId}&api_key=${CONFIG.apiKey}`;
     }
 
     function openMirKino(movie) {
@@ -69,9 +70,16 @@
             }
 
             const playlist = items.map(item => {
+                let name = item.Name;
+                if (item.MediaSources && item.MediaSources[0] && item.MediaSources[0].Path) {
+                    const path = item.MediaSources[0].Path;
+                    const fileName = path.split('\\').pop().split('/').pop();
+                    if (fileName) name = fileName;
+                }
+
                 return {
-                    title: `${item.Name} [4K / 5.1]`,
-                    url: buildStreamUrl(item.Id)
+                    title: name,
+                    url: buildStreamUrl(item)
                 };
             });
 
@@ -79,7 +87,7 @@
                 Lampa.Player.play(playlist[0]);
             } else {
                 Lampa.Select.show({
-                    title: 'Мир Кино: Результаты',
+                    title: 'Мир Кино: Выберите файл',
                     items: playlist,
                     onSelect: function (selected) {
                         Lampa.Player.play(selected);
@@ -90,8 +98,8 @@
     }
 
     function startPlugin() {
-        if (window.jellyfin_mirkino_ready_v10) return;
-        window.jellyfin_mirkino_ready_v10 = true;
+        if (window.jellyfin_mirkino_stream_v11) return;
+        window.jellyfin_mirkino_stream_v11 = true;
 
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
