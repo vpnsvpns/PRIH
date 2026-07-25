@@ -24,70 +24,59 @@
     }
 
     function authenticate(callback) {
-        if (authData.token && authData.userId) {
-            return callback(true);
-        }
+        if (authData.token && authData.userId) return callback(true);
 
         $.ajax({
             url: `${CONFIG.host}/Users/AuthenticateByName`,
             type: 'POST',
             contentType: 'application/json',
-            headers: {
-                'X-Emby-Authorization': getAuthHeader()
-            },
-            data: JSON.stringify({
-                Username: CONFIG.username,
-                Pw: CONFIG.password
-            }),
-            success: function (response) {
-                if (response && response.AccessToken) {
-                    authData.token = response.AccessToken;
-                    authData.userId = response.User.Id;
+            headers: { 'X-Emby-Authorization': getAuthHeader() },
+            data: JSON.stringify({ Username: CONFIG.username, Pw: CONFIG.password }),
+            success: function (res) {
+                if (res && res.AccessToken) {
+                    authData.token = res.AccessToken;
+                    authData.userId = res.User.Id;
                     callback(true);
                 } else {
                     callback(false);
                 }
             },
-            error: function () {
-                callback(false);
-            }
+            error: function () { callback(false); }
         });
     }
 
-    function searchMedia(title, callback) {
+    function searchMedia(query, callback) {
         authenticate(function (ok) {
             if (!ok) return callback([]);
 
-            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(title)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode`;
+            const url = `${CONFIG.host}/Users/${authData.userId}/Items?SearchTerm=${encodeURIComponent(query)}&Recursive=true&IncludeItemTypes=Movie,Series,Episode`;
 
             $.ajax({
                 url: url,
                 type: 'GET',
-                headers: {
-                    'X-Emby-Authorization': getAuthHeader()
-                },
-                success: function (data) {
-                    callback(data.Items || []);
-                },
-                error: function () {
-                    callback([]);
-                }
+                headers: { 'X-Emby-Authorization': getAuthHeader() },
+                success: function (data) { callback(data.Items || []); },
+                error: function () { callback([]); }
             });
         });
     }
 
-    function startPlugin() {
-        if (window.jellyfin_mirkino_loaded) return;
-        window.jellyfin_mirkino_loaded = true;
+    function initPlugin() {
+        if (window.jellyfin_mirkino_injected) return;
+        window.jellyfin_mirkino_injected = true;
 
-        // Встраивание кнопки в панель источников карточки фильма
+        // Всплывашка при загрузке Lampa для проверки работы
+        if (window.Lampa && Lampa.Noty) {
+            Lampa.Noty.show('Мир Кино: Плагин подключен!');
+        }
+
+        // Слушатель открытия карточки фильма
         Lampa.Listener.follow('full', function (e) {
-            if (e.type === 'complite') {
+            if (e.type === 'complite' || e.type === 'build') {
                 const render = e.object.activity.render();
-                const container = render.find('.full-start__buttons');
+                const targetContainer = render.find('.full-start__buttons');
 
-                // Проверяем, чтобы не дублировать кнопку
-                if (container.find('.button--mirkino').length === 0) {
+                if (targetContainer.length && !targetContainer.find('.button--mirkino').length) {
                     const btn = $(`
                         <div class="full-start__button selector button--mirkino">
                             <svg height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
@@ -97,22 +86,18 @@
                         </div>
                     `);
 
-                    btn.on('hover:enter', function () {
+                    btn.on('hover:enter click', function () {
                         const movieTitle = e.data.movie.title || e.data.movie.name;
-                        
-                        Lampa.Loading.start(function () {
-                            Lampa.Loading.stop();
-                        });
+                        Lampa.Loading.start(function () { Lampa.Loading.stop(); });
 
                         searchMedia(movieTitle, function (items) {
                             Lampa.Loading.stop();
 
-                            if (!items.length) {
-                                Lampa.Noty.show('Ничего не найдено на Мир Кино');
+                            if (!items || !items.length) {
+                                Lampa.Noty.show('Не найдено на Мир Кино');
                                 return;
                             }
 
-                            // Если найден один файл — запускаем, если несколько — выводим список
                             const playlist = items.map(item => ({
                                 title: item.Name,
                                 url: `${CONFIG.host}/Videos/${item.Id}/stream.m3u8?static=true&api_key=${authData.token}`
@@ -122,7 +107,7 @@
                                 Lampa.Player.play(playlist[0]);
                             } else {
                                 Lampa.Select.show({
-                                    title: 'Мир Кино: Выберите файл',
+                                    title: 'Мир Кино: Серии / Файлы',
                                     items: playlist,
                                     onSelect: function (selected) {
                                         Lampa.Player.play(selected);
@@ -132,17 +117,17 @@
                         });
                     });
 
-                    container.append(btn);
+                    targetContainer.append(btn);
                 }
             }
         });
     }
 
     if (window.appready) {
-        startPlugin();
+        initPlugin();
     } else {
         Lampa.Listener.follow('app', function (e) {
-            if (e.type === 'ready') startPlugin();
+            if (e.type === 'ready') initPlugin();
         });
     }
 })();
