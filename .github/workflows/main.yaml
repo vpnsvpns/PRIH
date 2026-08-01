@@ -17,7 +17,10 @@ jobs:
 
       - name: Fetch and Process All Configs
         run: |
-          # 1. Безопасно создаем и принудительно очищаем целевые файлы перед работой
+          # Отключаем немедленный выход при ошибках команды grep
+          set +e
+
+          # 1. Безопасно создаем и очищаем целевые файлы перед работой
           touch white.json ros.json mifa.json
           echo -n "" > white.json
           echo -n "" > ros.json
@@ -29,8 +32,8 @@ jobs:
           echo -n "" > temp_ros.txt
           echo -n "" > temp_mifa.txt
 
-          # 2. Скачиваем новый чистый текстовый источник для WHITE
-          curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt || touch raw_white.txt
+          # 2. Скачиваем текстовый источник для WHITE (без -f, чтобы не ломать скрипт при ошибке сети)
+          curl -sL "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt || touch raw_white.txt
 
           # 3. Скачиваем зашифрованные источники с подменой User-Agent
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
@@ -57,13 +60,12 @@ jobs:
           echo "#announce: Все обновы в тг PrihsVPN!" >> mifa.json
           echo "" >> mifa.json
 
-          # 5. Обработка текстовых файлов (прямой поиск через grep)
+          # 5. Обработка текстового файла WHITE
           if [ -s raw_white.txt ]; then
             grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
           fi
 
-          # 6. Построчная обработка шифрованных файлов (декодируем каждую строчку отдельно)
-          # Для ros.json
+          # 6. Построчная обработка шифрованных файлов (ROS и MIFA)
           if [ -s temp_ros.txt ]; then
             while IFS= read -r line || [ -n "$line" ]; do
               [ -z "$line" ] && continue
@@ -72,7 +74,6 @@ jobs:
             done < temp_ros.txt
           fi
 
-          # Для mifa.json
           if [ -s temp_mifa.txt ]; then
             while IFS= read -r line || [ -n "$line" ]; do
               [ -z "$line" ] && continue
@@ -81,7 +82,7 @@ jobs:
             done < temp_mifa.txt
           fi
           
-          # 7. Выметаем весь временный мусор
+          # 7. Чистим временные файлы
           rm -f raw_white.txt temp_ros.txt temp_mifa.txt
 
       - name: Commit and Push
@@ -89,9 +90,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Индексируем файлы
           git add white.json ros.json mifa.json
-          
-          # Пушим обновления
-          git commit -m "Updated WHITE source to igareck RU-checked list" || echo "No changes to commit"
+          git commit -m "Fix workflow fetch logic" || echo "No changes to commit"
           git push origin main || git push --force
