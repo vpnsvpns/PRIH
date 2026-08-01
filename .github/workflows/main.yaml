@@ -19,43 +19,49 @@ jobs:
         run: |
           set +e
 
-          # 1. Формируем чистые файлы с заголовками
+          # 1. Заголовки
           echo -e "#profile-update-interval: 1\n#profile-title: PrihVPN⚡ White\n#announce: Все обновы в тг PrihsVPN!\n" > white.json
           echo -e "#profile-update-interval: 1\n#profile-title: PrihVPN⚡ Ros\n#announce: Все обновы в тг PrihsVPN!\n" > ros.json
           echo -e "#profile-update-interval: 1\n#profile-title: PrihVPN⚡ Mifa Full\n#announce: Все обновы в тг PrihsVPN!\n" > mifa.json
 
-          # 2. Скачивание с User-Agent от Happ / Sing-box
+          # 2. Скачивание с User-Agent Happ
           HAPP_UA="Happ/1.0.0 (iOS; sing-box 1.8.0)"
 
-          curl -sL -A "$HAPP_UA" -H "Accept: */*" "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt
-          curl -sL -A "$HAPP_UA" -H "Accept: */*" "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o raw_ros.txt
-          curl -sL -A "$HAPP_UA" -H "Accept: */*" "https://mifa.world/fast" -o raw_mifa.txt
+          curl -sL -A "$HAPP_UA" "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt
+          curl -sL -A "$HAPP_UA" "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o raw_ros.txt
+          curl -sL -A "$HAPP_UA" "https://mifa.world/fast" -o raw_mifa.txt
 
-          # 3. Обработка WHITE
+          # 3. WHITE (обычный текст)
           if [ -s raw_white.txt ]; then
-            grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
+            tr -d '\r' < raw_white.txt | grep -E -i "^(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> white.json || true
           fi
 
-          # 4. Обработка ROS (Happ UA + универсальная нарезка монолита)
+          # 4. ROS (умный decode через openssl + нарезка слитых строк)
           if [ -s raw_ros.txt ]; then
-            # Декодируем base64 и через sed/tr разбиваем слитый текст перед каждым протоколом
-            (base64 -d -i raw_ros.txt 2>/dev/null || cat raw_ros.txt) \
-              | tr -d '\r' \
+            openssl base64 -d -A -in raw_ros.txt 2>/dev/null > decoded_ros.txt || cp raw_ros.txt decoded_ros.txt
+            if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_ros.txt; then
+              cp raw_ros.txt decoded_ros.txt
+            fi
+            tr -d '\r' < decoded_ros.txt \
               | sed -E 's/(vless:\/\/|trojan:\/\/|ss:\/\/|hysteria2:\/\/)/\n\1/g' \
               | grep -E -i "^(vless|trojan|ss|hysteria2)://" \
               | grep -v "0.0.0.0" >> ros.json || true
           fi
 
-          # 5. Обработка MIFA
+          # 5. MIFA (умный decode через openssl + нарезка слитых строк)
           if [ -s raw_mifa.txt ]; then
-            (base64 -d -i raw_mifa.txt 2>/dev/null || cat raw_mifa.txt) \
-              | tr -d '\r' \
+            openssl base64 -d -A -in raw_mifa.txt 2>/dev/null > decoded_mifa.txt || cp raw_mifa.txt decoded_mifa.txt
+            if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_mifa.txt; then
+              cp raw_mifa.txt decoded_mifa.txt
+            fi
+            tr -d '\r' < decoded_mifa.txt \
               | sed -E 's/(vless:\/\/|trojan:\/\/|ss:\/\/|hysteria2:\/\/)/\n\1/g' \
               | grep -E -i "^(vless|trojan|ss|hysteria2)://" \
               | grep -v "0.0.0.0" >> mifa.json || true
           fi
 
-          rm -f raw_white.txt raw_ros.txt raw_mifa.txt
+          # Чистка мусора
+          rm -f raw_white.txt raw_ros.txt raw_mifa.txt decoded_ros.txt decoded_mifa.txt
 
       - name: Commit and Push
         run: |
@@ -63,5 +69,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           git add white.json ros.json mifa.json
-          git commit -m "Update via Happ User-Agent" || echo "No changes"
+          git commit -m "Update via openssl base64 decoder" || echo "No changes"
           git push origin main || git push --force
