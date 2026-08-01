@@ -17,34 +17,28 @@ jobs:
 
       - name: Fetch and Process All Configs
         run: |
-          # Отключаем немедленный выход при ошибках команды grep
           set +e
 
-          # 1. Безопасно создаем и очищаем целевые файлы перед работой
+          # 1. Очищаем целевые файлы
           touch white.json ros.json mifa.json
           echo -n "" > white.json
           echo -n "" > ros.json
           echo -n "" > mifa.json
 
-          # Создаем и очищаем временные файлы буфера
+          # Буферные файлы
           touch raw_white.txt temp_ros.txt temp_mifa.txt
           echo -n "" > raw_white.txt
           echo -n "" > temp_ros.txt
           echo -n "" > temp_mifa.txt
 
-          # 2. Скачиваем текстовый источник для WHITE (без -f, чтобы не ломать скрипт при ошибке сети)
+          # 2. Скачиваем источники
           curl -sL "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt || touch raw_white.txt
 
-          # 3. Скачиваем зашифрованные источники с подменой User-Agent
-          curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o temp_ros.txt || touch temp_ros.txt
-          
-          curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://mifa.world/fast" -o temp_mifa.txt || touch temp_mifa.txt
+          # Для ROS и MIFA маскируемся под v2rayN / Happ / Clash
+          curl -sL -A "v2rayN/6.23" -H "Accept: */*" "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o temp_ros.txt || touch temp_ros.txt
+          curl -sL -A "v2rayN/6.23" -H "Accept: */*" "https://mifa.world/fast" -o temp_mifa.txt || touch temp_mifa.txt
 
-          # 4. Генерируем фирменные шапки заголовков БЕЗ таймстампов
+          # 3. Шапки заголовков
           echo "#profile-update-interval: 1" > white.json
           echo "#profile-title: PrihVPN⚡ White" >> white.json
           echo "#announce: Все обновы в тг PrihsVPN!" >> white.json
@@ -60,29 +54,22 @@ jobs:
           echo "#announce: Все обновы в тг PrihsVPN!" >> mifa.json
           echo "" >> mifa.json
 
-          # 5. Обработка текстового файла WHITE
+          # 4. Парсинг WHITE (обычный чистый текст)
           if [ -s raw_white.txt ]; then
             grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
           fi
 
-          # 6. Построчная обработка шифрованных файлов (ROS и MIFA)
+          # 5. Универсальный парсинг ROS (декодирует и монолитный, и построчный Base64)
           if [ -s temp_ros.txt ]; then
-            while IFS= read -r line || [ -n "$line" ]; do
-              [ -z "$line" ] && continue
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null)
-              echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> ros.json || true
-            done < temp_ros.txt
+            (base64 -d -i < temp_ros.txt 2>/dev/null || cat temp_ros.txt) | tr -d '\r' | awk -v RS='(vless|trojan|ss|hysteria2)://' 'NR>1 {print proto $0} {proto=RT}' | grep -E -i "^(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> ros.json || true
           fi
 
+          # 6. Универсальный парсинг MIFA
           if [ -s temp_mifa.txt ]; then
-            while IFS= read -r line || [ -n "$line" ]; do
-              [ -z "$line" ] && continue
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null)
-              echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
-            done < temp_mifa.txt
+            (base64 -d -i < temp_mifa.txt 2>/dev/null || cat temp_mifa.txt) | tr -d '\r' | awk -v RS='(vless|trojan|ss|hysteria2)://" 'NR>1 {print proto $0} {proto=RT}' | grep -E -i "^(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
           fi
           
-          # 7. Чистим временные файлы
+          # 7. Очистка буфера
           rm -f raw_white.txt temp_ros.txt temp_mifa.txt
 
       - name: Commit and Push
@@ -91,5 +78,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
           git add white.json ros.json mifa.json
-          git commit -m "Fix workflow fetch logic" || echo "No changes to commit"
+          git commit -m "Fix universal base64 parsing for ROS and MIFA" || echo "No changes to commit"
           git push origin main || git push --force
