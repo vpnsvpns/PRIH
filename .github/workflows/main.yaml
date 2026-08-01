@@ -33,7 +33,7 @@ jobs:
           curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || touch raw_white.txt
 
           # 3. Скачиваем зашифрованные источники
-          curl -sL "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/protocols/vless/transports/grpc" -o temp_ros.txt || touch temp_ros.txt
+          curl -sL "https://subrostunnel.vercel.app/gen.txt" -o temp_ros.txt || touch temp_ros.txt
           
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
