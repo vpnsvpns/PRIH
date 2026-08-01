@@ -10,24 +10,69 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+      - name: Fetch and Process Configs
+        run: |
+          # Включаем мягкий режим: скрипт НЕ падает от одной ошибки
+          set +e
 
-      - name: Run Parser
-        run: python parser.py
+          # 1. Готовим файлы с шапками
+          cat << 'EOF' > white.json
+          #profile-update-interval: 1
+          #profile-title: PrihVPN⚡ White
+          #announce: Все обновы в тг PrihsVPN!
+
+          EOF
+
+          cat << 'EOF' > ros.json
+          #profile-update-interval: 1
+          #profile-title: PrihVPN⚡ Ros
+          #announce: Все обновы в тг PrihsVPN!
+
+          EOF
+
+          cat << 'EOF' > mifa.json
+          #profile-update-interval: 1
+          #profile-title: PrihVPN⚡ Mifa Full
+          #announce: Все обновы в тг PrihsVPN!
+
+          EOF
+
+          # 2. Скачиваем RAW-данные через curl с эмуляцией v2rayN
+          UA="v2rayN/6.23"
+
+          curl -sL -A "$UA" "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt
+          curl -sL -A "$UA" "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o raw_ros.txt
+          curl -sL -A "$UA" "https://mifa.world/fast" -o raw_mifa.txt
+
+          # 3. Обработка WHITE (просто текст)
+          if [ -s raw_white.txt ]; then
+            grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
+          fi
+
+          # 4. Обработка ROS (Base64 с автозаменой падающих блоков)
+          if [ -s raw_ros.txt ]; then
+            # Пробуем декодировать; если не base64, берем оригинал
+            (base64 -d -i raw_ros.txt 2>/dev/null || cat raw_ros.txt) | tr -d '\r' | grep -E -i "vless://|trojan://|ss://|hysteria2://" | grep -v "0.0.0.0" >> ros.json || true
+          fi
+
+          # 5. Обработка MIFA (Base64 с автозаменой падающих блоков)
+          if [ -s raw_mifa.txt ]; then
+            (base64 -d -i raw_mifa.txt 2>/dev/null || cat raw_mifa.txt) | tr -d '\r' | grep -E -i "vless://|trojan://|ss://|hysteria2://" | grep -v "0.0.0.0" >> mifa.json || true
+          fi
+
+          # Удаляем временные файлы
+          rm -f raw_white.txt raw_ros.txt raw_mifa.txt
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           git add white.json ros.json mifa.json
-          git commit -m "Update configs via fixed parser.py" || echo "No changes to commit"
+          git commit -m "Update subscription configs (Bash Pure)" || echo "No changes to commit"
           git push origin main || git push --force
