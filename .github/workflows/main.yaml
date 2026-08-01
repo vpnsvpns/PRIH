@@ -17,7 +17,7 @@ jobs:
 
       - name: Fetch and Process All Configs
         run: |
-          # 1. Безопасно создаем и принудительно очищаем целевые файлы перед работой (vpn.json полностью удален)
+          # 1. Безопасно создаем и принудительно очищаем целевые файлы перед работой
           touch white.json ros.json mifa.json
           echo -n "" > white.json
           echo -n "" > ros.json
@@ -29,15 +29,17 @@ jobs:
           echo -n "" > temp_ros.txt
           echo -n "" > temp_mifa.txt
 
-          # 2. Скачиваем обычный текстовый источник (только белый список bwl)
-          curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || touch raw_white.txt
+          # 2. Скачиваем новый чистый текстовый источник для WHITE
+          curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" -o raw_white.txt || touch raw_white.txt
 
-          # 3. Скачиваем зашифрованные источники
-          curl -sL "https://subrostunnel.vercel.app/gen.txt" -o temp_ros.txt || touch temp_ros.txt
+          # 3. Скачиваем зашифрованные источники с подменой User-Agent
+          curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
+               "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o temp_ros.txt || touch temp_ros.txt
           
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://mifa.world/vless" -o temp_mifa.txt || touch temp_mifa.txt
+               "https://mifa.world/fast" -o temp_mifa.txt || touch temp_mifa.txt
 
           # 4. Генерируем фирменные шапки заголовков БЕЗ таймстампов
           echo "#profile-update-interval: 1" > white.json
@@ -87,9 +89,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Индексируем только три оставшихся файла
+          # Индексируем файлы
           git add white.json ros.json mifa.json
           
-          # Пушим обновления одной транзакцией
-          git commit -m "Mega Split Update (Clean Headers): $(date +'%H:%M:%S')" || echo "No changes to commit"
+          # Пушим обновления
+          git commit -m "Updated WHITE source to igareck RU-checked list" || echo "No changes to commit"
           git push origin main || git push --force
