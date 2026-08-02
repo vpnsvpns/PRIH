@@ -2,8 +2,8 @@ name: Parse MAX Subscription
 
 on:
   schedule:
-    - cron: '0 * * * *' # Каждый час
-  workflow_dispatch:     # Запуск вручную
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   parse-max:
@@ -19,7 +19,7 @@ jobs:
         run: |
           set +e
 
-          # 1. Формируем файл max.json с шапкой
+          # 1. Шапка
           cat << 'EOF' > max.json
           #profile-update-interval: 1
           #profile-title: PrihVPN⚡ MAX
@@ -27,33 +27,56 @@ jobs:
 
           EOF
 
-          # 2. Качаем с полным набором заголовков Happ / sing-box
-          # Если сервер проверяет User-Agent, это отдаст base64 подписку
-          curl -sL \
-            -A "Happ/1.0.0 (iOS; sing-box 1.8.0)" \
-            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
-            -H "Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7" \
-            -H "Connection: keep-alive" \
-            "https://m1xzoocrrs1nezbe.mxm-secure.online/" -o raw_max.txt
+          # 2. Переменные
+          UUID="2cbc6c20-5439-493c-a3f2-e337b4d01b11"
+          UA="Happ/5.4.0 (iPhone; iOS 18.7.2; Scale/3.00) Xray/26.7.28"
+          
+          # Пробуем стучаться напрямую в эндпоинт пользователя
+          URL_WITH_UUID="https://m1xzoocrRS1NeZbe.mxm-secure.online/${UUID}"
+          URL_SUB="https://m1xzoocrRS1NeZbe.mxm-secure.online/sub/${UUID}"
 
-          # 3. Декодируем base64 и режем ссылки
+          # 3. Скачиваем (сначала прямо по UUID, если пусто - пробуем /sub/)
+          curl -sL --compressed \
+            -A "$UA" \
+            -H "User-Agent: $UA" \
+            -H "X-User-Id: $UUID" \
+            -H "Accept: */*" \
+            "$URL_WITH_UUID" -o raw_max.txt
+
+          if [ ! -s raw_max.txt ] || ! grep -qE "vless|trojan|ss|hysteria2|[A-Za-z0-9+/=]{20,}" raw_max.txt; then
+            curl -sL --compressed \
+              -A "$UA" \
+              -H "User-Agent: $UA" \
+              -H "X-User-Id: $UUID" \
+              -H "Accept: */*" \
+              "$URL_SUB" -o raw_max.txt
+          fi
+
+          # 4. Декодирование и парсинг
           if [ -s raw_max.txt ]; then
-            # Декодируем base64 (openssl съедает сплошной текст без переносов)
+            # Замена URL-safe base64 символов (- на +, _ на /)
+            sed -i 's/-/+/g; s/_/\//g' raw_max.txt
+
+            # Декодируем base64 (openssl)
             openssl base64 -d -A -in raw_max.txt 2>/dev/null > decoded_max.txt || cp raw_max.txt decoded_max.txt
-            
-            # Проверяем: если декодер выдал пустоту или не ссылки, берем исходник
+
+            # Фоллбэк на обычный base64
+            if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_max.txt; then
+              base64 -d raw_max.txt 2>/dev/null > decoded_max.txt || cp raw_max.txt decoded_max.txt
+            fi
+
+            # Если внутри открытый текст
             if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_max.txt; then
               cp raw_max.txt decoded_max.txt
             fi
 
-            # Разбиваем монолитную строку перед каждым протоколом и достаем ссылки
+            # 5. Режем монолит и пишем в max.json
             tr -d '\r' < decoded_max.txt \
               | sed -E 's/(vless:\/\/|trojan:\/\/|ss:\/\/|hysteria2:\/\/)/\n\1/g' \
               | grep -E -i "^(vless|trojan|ss|hysteria2)://" \
               | grep -v "0.0.0.0" >> max.json || true
           fi
 
-          # Чистим временные файлы
           rm -f raw_max.txt decoded_max.txt
 
       - name: Commit and Push max.json
@@ -62,5 +85,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           git add max.json
-          git commit -m "Update max.json" || echo "No changes to commit"
+          git commit -m "Update max.json with UUID endpoint" || echo "No changes"
           git push origin main || git push --force
