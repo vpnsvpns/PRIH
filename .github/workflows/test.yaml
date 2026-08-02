@@ -27,32 +27,36 @@ jobs:
 
           EOF
 
-          # 2. Переменные
+          # 2. Данные аккаунта и устройства
           UUID="2cbc6c20-5439-493c-a3f2-e337b4d01b11"
-          UA="Happ/5.4.0 (iPhone; iOS 18.7.2; Scale/3.00) Xray/26.7.28"
+          UA="Happ/5.4.0 (iPhone15,2; iOS 18.7.2; Scale/3.00) Xray/26.7.28"
           
-          # Пробуем стучаться напрямую в эндпоинт пользователя
-          URL_WITH_UUID="https://m1xzoocrRS1NeZbe.mxm-secure.online/${UUID}"
-          URL_SUB="https://m1xzoocrRS1NeZbe.mxm-secure.online/sub/${UUID}"
+          # Основной URL подписки
+          URL="https://m1xzoocrRS1NeZbe.mxm-secure.online/${UUID}"
 
-          # 3. Скачиваем (сначала прямо по UUID, если пусто - пробуем /sub/)
+          # 3. Скачивание с эмуляцией отпечатка устройства iPhone 14 Pro
           curl -sL --compressed \
             -A "$UA" \
             -H "User-Agent: $UA" \
             -H "X-User-Id: $UUID" \
+            -H "X-Device-Model: iPhone15,2" \
+            -H "X-OS-Version: 18.7.2" \
             -H "Accept: */*" \
-            "$URL_WITH_UUID" -o raw_max.txt
+            "$URL" -o raw_max.txt
 
+          # Если эндпоинт коренной не дал результата, пробуем альтернативный путь панели
           if [ ! -s raw_max.txt ] || ! grep -qE "vless|trojan|ss|hysteria2|[A-Za-z0-9+/=]{20,}" raw_max.txt; then
             curl -sL --compressed \
               -A "$UA" \
               -H "User-Agent: $UA" \
               -H "X-User-Id: $UUID" \
+              -H "X-Device-Model: iPhone15,2" \
+              -H "X-OS-Version: 18.7.2" \
               -H "Accept: */*" \
-              "$URL_SUB" -o raw_max.txt
+              "https://m1xzoocrRS1NeZbe.mxm-secure.online/sub/${UUID}" -o raw_max.txt
           fi
 
-          # 4. Декодирование и парсинг
+          # 4. Декодирование base64 и парсинг
           if [ -s raw_max.txt ]; then
             # Замена URL-safe base64 символов (- на +, _ на /)
             sed -i 's/-/+/g; s/_/\//g' raw_max.txt
@@ -85,5 +89,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           git add max.json
-          git commit -m "Update max.json with UUID endpoint" || echo "No changes"
+          git commit -m "Update max.json with HWID headers" || echo "No changes"
           git push origin main || git push --force
