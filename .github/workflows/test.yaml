@@ -27,54 +27,56 @@ jobs:
 
           EOF
 
-          # 2. Данные аккаунта и устройства
+          # 2. Переменные
           UUID="2cbc6c20-5439-493c-a3f2-e337b4d01b11"
-          UA="Happ/5.4.0 (iPhone15,2; iOS 18.7.2; Scale/3.00) Xray/26.7.28"
-          
-          # Основной URL подписки
-          URL="https://m1xzoocrRS1NeZbe.mxm-secure.online/${UUID}"
+          HWID="hd-bcc5e64a13f07e82"
+          UA="Happ/5.4.0 (Google Pixel 8; Android 14; Scale/2.75) Xray/26.7.28"
 
-          # 3. Скачивание с эмуляцией отпечатка устройства iPhone 14 Pro
+          # 3. Запрос с эмуляцией зарегистрированного Pixel 8
           curl -sL --compressed \
             -A "$UA" \
             -H "User-Agent: $UA" \
             -H "X-User-Id: $UUID" \
-            -H "X-Device-Model: iPhone15,2" \
-            -H "X-OS-Version: 18.7.2" \
+            -H "X-Device-Id: $HWID" \
+            -H "X-HWID: $HWID" \
+            -H "X-Device-Model: Pixel 8" \
+            -H "X-OS-Version: 14" \
             -H "Accept: */*" \
-            "$URL" -o raw_max.txt
+            "https://m1xzoocrRS1NeZbe.mxm-secure.online/${UUID}" -o raw_max.txt
 
-          # Если эндпоинт коренной не дал результата, пробуем альтернативный путь панели
+          # Если основной путь пуст, пробуем роут /sub/
           if [ ! -s raw_max.txt ] || ! grep -qE "vless|trojan|ss|hysteria2|[A-Za-z0-9+/=]{20,}" raw_max.txt; then
             curl -sL --compressed \
               -A "$UA" \
               -H "User-Agent: $UA" \
               -H "X-User-Id: $UUID" \
-              -H "X-Device-Model: iPhone15,2" \
-              -H "X-OS-Version: 18.7.2" \
+              -H "X-Device-Id: $HWID" \
+              -H "X-HWID: $HWID" \
+              -H "X-Device-Model: Pixel 8" \
+              -H "X-OS-Version: 14" \
               -H "Accept: */*" \
               "https://m1xzoocrRS1NeZbe.mxm-secure.online/sub/${UUID}" -o raw_max.txt
           fi
 
-          # 4. Декодирование base64 и парсинг
+          # 4. Декодирование base64 и нарезка
           if [ -s raw_max.txt ]; then
-            # Замена URL-safe base64 символов (- на +, _ на /)
+            # Нормализация URL-safe Base64 (- на +, _ на /)
             sed -i 's/-/+/g; s/_/\//g' raw_max.txt
 
-            # Декодируем base64 (openssl)
+            # Пробуем декодировать openssl
             openssl base64 -d -A -in raw_max.txt 2>/dev/null > decoded_max.txt || cp raw_max.txt decoded_max.txt
 
-            # Фоллбэк на обычный base64
+            # Фоллбэк на утилиту base64
             if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_max.txt; then
               base64 -d raw_max.txt 2>/dev/null > decoded_max.txt || cp raw_max.txt decoded_max.txt
             fi
 
-            # Если внутри открытый текст
+            # Если панель отдала открытый текст без base64
             if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_max.txt; then
               cp raw_max.txt decoded_max.txt
             fi
 
-            # 5. Режем монолит и пишем в max.json
+            # 5. Парсинг конфигов в файл
             tr -d '\r' < decoded_max.txt \
               | sed -E 's/(vless:\/\/|trojan:\/\/|ss:\/\/|hysteria2:\/\/)/\n\1/g' \
               | grep -E -i "^(vless|trojan|ss|hysteria2)://" \
@@ -89,5 +91,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           git add max.json
-          git commit -m "Update max.json with HWID headers" || echo "No changes"
+          git commit -m "Parse MAX via Pixel 8 HWID" || echo "No changes"
           git push origin main || git push --force
