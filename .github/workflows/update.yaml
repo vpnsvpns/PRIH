@@ -1,41 +1,111 @@
-name: Update Max Subscription
+name: parse-max
 
 on:
   schedule:
-    # Запуск каждый час
-    - cron: '0 * * * *'
-  workflow_dispatch: # Позволяет запускать вручную из вкладки Actions
+    - cron: "0 * * * *"   # каждый час
+  workflow_dispatch:      # ручной запуск кнопкой
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  parse:
     runs-on: ubuntu-latest
-    
-    # Обязательные права для записи изменений обратно в репозиторий
-    permissions:
-      contents: write
-
     steps:
-      - name: Клонирование репозитория
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Установка Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Запуск скрипта обновления
-        run: python updater.py
-
-      - name: Автоматический коммит и отправка файла max.json
+      - name: Fetch & process subscription
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          python3 - <<'PY'
+          import base64, re, subprocess, sys
+
+          URL = "https://m1xzoocrrs1nezbe.mxm-secure.online/"
+          OUT = "max.json"
+
+          NEW_HEAD = [
+              "#profile-update-interval: 1",
+              "#profile-title: PrihVPN⚡️ Max",
+              "#announce: Все обновы в тг PrihsVPN!",
+          ]
+
+          # косплеим Happ с твоими hwid (FoxOS / iPhone 14 Pro)
+          COMBOS = [
+              dict(ua="Happ/3.13.0", hwid="7bfa9b8f-d678-4e6d-8eec-1b0e795db16b", dos="Android", ver="15",     model="ELP-NX1"),
+              dict(ua="Happ/3.13.0", hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
+              dict(ua="Happ/1.0",    hwid="7bfa9b8f-d678-4e6d-8eec-1b0e795db16b", dos="Android", ver="15",     model="ELP-NX1"),
+              dict(ua="Happ/1.0",    hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
+          ]
+
+          def fetch(c):
+              cmd = ["curl", "-sS", "--compressed", "--max-time", "30",
+                     "-H", f"User-Agent: {c['ua']}",
+                     "-H", f"X-Hwid: {c['hwid']}",
+                     "-H", f"X-Device-Os: {c['dos']}",
+                     "-H", f"X-Ver-Os: {c['ver']}",
+                     "-H", f"X-Device-Model: {c['model']}",
+                     "-H", "X-Device-Locale: ru",
+                     URL]
+              return subprocess.run(cmd, capture_output=True, text=True)
+
+          def valid(t):
+              t = t.strip()
+              if len(t) < 32: return False
+              low = t.lower()
+              if "<html" in low or "<!doctype" in low: return False
+              if "документация" in low or ("maximum vpn" in low and "://" not in t): return False
+              return (bool(re.search(r"(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria|tuic)://", t))
+                      or t.lstrip().startswith(("[", "{", "#")))
+
+          def unb64(t):  # если тело пришло одной base64-строкой — декодим
+              lines = [l for l in t.splitlines() if l.strip()]
+              if len(lines) != 1: return t
+              s = lines[0].strip()
+              if not re.fullmatch(r"[A-Za-z0-9+/=_-]{64,}", s): return t
+              for alt in (s, s.replace("-", "+").replace("_", "/")):
+                  try:
+                      dec = base64.b64decode(alt + "=" * (-len(alt) % 4)).decode("utf-8", "ignore")
+                  except Exception:
+                      continue
+                  if "://" in dec or dec.startswith("#") or dec.lstrip().startswith("["):
+                      return dec
+              return t
+
+          body = None
+          for c in COMBOS:
+              r = fetch(c)
+              if r.returncode != 0:
+                  print("fetch fail:", r.stderr[:200]); continue
+              t = unb64(r.stdout)
+              if valid(t):
+                  body = t; print("OK:", c["ua"], c["hwid"]); break
+              print("мусор вместо подписки от", c["ua"], ":", t[:100].replace("\n", "\\n"))
+
+          if body is None:
+              sys.exit("ERROR: ни одна комбинация UA/HWID не вернула подписку")
+
+          lines = body.splitlines()
+          i = 0
+          while i < len(lines) and lines[i].lstrip().startswith("#"):
+              i += 1                      # скипаем родные #комменты панели (те самые 4 строчки)
+          servers = lines[i:]
+          while servers and not servers[0].strip():
+              servers.pop(0)
+          if not servers:
+              sys.exit("ERROR: список серверов пустой")
+
+          with open(OUT, "w", encoding="utf-8") as f:
+              f.write("\n".join(NEW_HEAD + servers) + "\n")
+          print(f"wrote {OUT}, строк серверов: {len(servers)}")
+          PY
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add max.json
-          
-          # Проверяем, изменился ли файл, чтобы не делать пустые коммиты
-          if git diff --staged --quiet; then
-            echo "Файл не изменился, пропускаем коммит."
+          if git diff --cached --quiet; then
+            echo "без изменений"
           else
-            git commit -m "auto: update max.json payload"
+            git commit -m "max.json: auto update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             git push
           fi
