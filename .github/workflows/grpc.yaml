@@ -1,0 +1,66 @@
+name: Parse gRPC Subscription
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  parse-grpc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch and Parse gRPC
+        run: |
+          set +e
+
+          # 1. Заголовок подписки
+          cat << 'EOF' > grpc.json
+          #profile-update-interval: 1
+          #profile-title: PrihVPN⚡ gRPC
+          #announce: Все обновы в тг PrihsVPN!
+
+          EOF
+
+          # 2. Скачивание исходных данных с GitVerse
+          URL="https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/protocols/vless/transports/grpc"
+          curl -sL --compressed "$URL" -o raw_grpc.txt
+
+          # 3. Декодирование и извлечение ссылок
+          if [ -s raw_grpc.txt ]; then
+            # Замена URL-safe Base64 символов (- на +, _ на /)
+            sed -i 's/-/+/g; s/_/\//g' raw_grpc.txt
+
+            # Декодирование через openssl (с фоллбэком на base64 и сырой текст)
+            openssl base64 -d -A -in raw_grpc.txt 2>/dev/null > decoded_grpc.txt || cp raw_grpc.txt decoded_grpc.txt
+
+            if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_grpc.txt; then
+              base64 -d raw_grpc.txt 2>/dev/null > decoded_grpc.txt || cp raw_grpc.txt decoded_grpc.txt
+            fi
+
+            if ! grep -qE "vless://|trojan://|ss://|hysteria2://" decoded_grpc.txt; then
+              cp raw_grpc.txt decoded_grpc.txt
+            fi
+
+            # 4. Форматирование и очистка невалидных IP
+            tr -d '\r' < decoded_grpc.txt \
+              | sed -E 's/(vless:\/\/|trojan:\/\/|ss:\/\/|hysteria2:\/\/)/\n\1/g' \
+              | grep -E -i "^(vless|trojan|ss|hysteria2)://" \
+              | grep -v "0.0.0.0" >> grpc.json || true
+          fi
+
+          rm -f raw_grpc.txt decoded_grpc.txt
+
+      - name: Commit and Push grpc.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add grpc.json
+          git commit -m "Update grpc.json subscription" || echo "No changes"
+          git push origin main || git push --force
