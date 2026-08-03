@@ -1,4 +1,4 @@
-<img width="384" height="661" alt="изображение" src="https://github.com/user-attachments/assets/fc0cc1eb-32e9-42d4-aad2-e5b900148f9c" /># ⚡️ Prihs — Энциклопедия по обходу блокировок бесплатно в России ([Telegram канал проекта](https://t.me/PrihsVPN) @PrihsVPN)
+# ⚡️ Prihs — Энциклопедия по обходу блокировок бесплатно в России ([Telegram канал проекта](https://t.me/PrihsVPN) @PrihsVPN)
 ## Зеркало Prihs на [GitLab](https://gitlab.com/prihs/Prihs)
 ## Благодарности: Mifa (mifa.world), Igareck, rostunnel (TGK: rostunnel)
 
