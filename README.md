@@ -1,4 +1,4 @@
-# ⚡️ Prihs — Энциклопедия по обходу блокировок бесплатно в России ([Telegram канал проекта](https://t.me/PrihsVPN) @PrihsVPN)
+<img width="384" height="661" alt="изображение" src="https://github.com/user-attachments/assets/fc0cc1eb-32e9-42d4-aad2-e5b900148f9c" /># ⚡️ Prihs — Энциклопедия по обходу блокировок бесплатно в России ([Telegram канал проекта](https://t.me/PrihsVPN) @PrihsVPN)
 ## Зеркало Prihs на [GitLab](https://gitlab.com/prihs/Prihs)
 ## Благодарности: Mifa (mifa.world), Igareck, rostunnel (TGK: rostunnel)
 
@@ -51,8 +51,8 @@ https://vpnsvpns.github.io/Prihs/mifa.json
 <img src="https://github.com/vpnsvpns/Prihs/blob/main/qr-codes/mifa.png?raw=true" width="220" height="220" alt="QR Главная сабка">
 </details>
 
-### 💾 Резервная сабка (Ros)
-https://vpnsvpns.github.io/Prihs/ros.json
+### 💾 Резервная сабка (Max)
+https://vpnsvpns.github.io/Prihs/max.json
 <details>
 <summary>📱 Показать QR-код</summary>
 
