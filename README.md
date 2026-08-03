@@ -56,7 +56,7 @@ https://vpnsvpns.github.io/Prihs/max.json
 <details>
 <summary>📱 Показать QR-код</summary>
 
-<img src="https://github.com/vpnsvpns/Prihs/blob/main/qr-codes/ros.png?raw=true" width="220" height="220" alt="QR Резервная сабка">
+<img src="http://qrcoder.ru/code/?https%3A%2F%2Fvpnsvpns.github.io%2FPrihs%2Fmax.json&4&0?raw=true" width="220" height="220" alt="QR Резервная сабка">
 </details>
 
 ### 💾 Дополнительная сабка (White для белых списков)
