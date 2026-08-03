@@ -1,0 +1,41 @@
+name: Update Max Subscription
+
+on:
+  schedule:
+    # Запуск каждый час
+    - cron: '0 * * * *'
+  workflow_dispatch: # Позволяет запускать вручную из вкладки Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # Обязательные права для записи изменений обратно в репозиторий
+    permissions:
+      contents: write
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Запуск скрипта обновления
+        run: python updater.py
+
+      - name: Автоматический коммит и отправка файла max.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add max.json
+          
+          # Проверяем, изменился ли файл, чтобы не делать пустые коммиты
+          if git diff --staged --quiet; then
+            echo "Файл не изменился, пропускаем коммит."
+          else
+            git commit -m "auto: update max.json payload"
+            git push
+          fi
