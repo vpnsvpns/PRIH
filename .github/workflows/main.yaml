@@ -27,7 +27,7 @@ jobs:
           echo -n "" > temp_ros.txt
           echo -n "" > temp_mifa.txt
 
-          # 2. Скачиваем обычный текстовый источник (только белый список)
+          # 2. Скачиваем обычный текстовый источник (белый список)
           curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || true
 
           # 3. Скачиваем зашифрованные источники
@@ -55,8 +55,7 @@ jobs:
             grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
           fi
 
-          # 6. Построчная обработка шифрованных файлов
-          # Для ros.json
+          # 6. ROS: построчное декодирование (там по строке на ключ)
           if [ -s temp_ros.txt ]; then
             while IFS= read -r line || [ -n "$line" ]; do
               if [ -z "$line" ]; then continue; fi
@@ -65,19 +64,26 @@ jobs:
             done < temp_ros.txt
           fi
 
-          # Для mifa.json
+          # 7. MIFA: источник — один большой base64 с переносами,
+          #    поэтому декодируем файл ЦЕЛИКОМ; построчно — только фолбэк
           if [ -s temp_mifa.txt ]; then
-            while IFS= read -r line || [ -n "$line" ]; do
-              if [ -z "$line" ]; then continue; fi
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
-              echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
-            done < temp_mifa.txt
+            base64 -d -i temp_mifa.txt > decoded_mifa.txt 2>/dev/null || true
+            if grep -q -E -i "(vless|trojan|ss|hysteria2)://" decoded_mifa.txt; then
+              grep -E -i "(vless|trojan|ss|hysteria2)://" decoded_mifa.txt | grep -v "0.0.0.0" >> mifa.json || true
+            else
+              while IFS= read -r line || [ -n "$line" ]; do
+                if [ -z "$line" ]; then continue; fi
+                decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
+                echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
+              done < temp_mifa.txt
+            fi
+            rm -f decoded_mifa.txt
           fi
 
-          # 7. Выметаем весь временный мусор
+          # 8. Выметаем весь временный мусор
           rm -f raw_white.txt temp_ros.txt temp_mifa.txt
 
-          # 8. Страховка: шаг всегда завершается с нулевым кодом
+          # 9. Страховка: шаг всегда завершается с нулевым кодом
           exit 0
 
       - name: Commit and Push
@@ -85,4 +91,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add white.json ros.json mifa.json
-          git commit -m "Mega Split Update (Clean Headers): $(date +'%H:%M:%S')" || echo "No changes
+          git commit -m "Mega Split Update (Clean Headers) $(date -u +%H:%M:%S)" || echo "No changes to commit"
+          git push origin main || git push --force origin main
