@@ -1,0 +1,290 @@
+name: parse-max
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # каждый час
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  parse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch & convert
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re, subprocess, sys, urllib.parse
+
+          URL = "https://m1xzoocrRS1NeZbe.mxm-secure.online/"
+          OUT = "max.json"
+
+          NEW_HEAD = [
+              "#profile-update-interval: 1",
+              "#profile-title: PrihVPN⚡️ Max",
+              "#announce: Все обновы в тг PrihsVPN!",
+          ]
+
+          COMBOS = [
+              dict(ua="Happ/3.13.0", hwid="7bfa9b8f-d678-4e6d-8eec-1b0e795db16b", dos="Android", ver="15",     model="ELP-NX1"),
+              dict(ua="Happ/3.13.0", hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
+              dict(ua="Happ/1.0",    hwid="7bfa9b8f-d678-4e6d-8eec-1b0e795db16b", dos="Android", ver="15",     model="ELP-NX1"),
+              dict(ua="Happ/1.0",    hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
+          ]
+
+          # --- уборка мусора от сломанной версии: нумерованные json в корне ---
+          for f in os.listdir("."):
+              if re.match(r"^\d+\.json$", f) or re.match(r"^\d{3}_.+\.json$", f):
+                  os.remove(f)
+                  print("removed junk:", f)
+
+          # ------- парсер JSON-конфига -> ссылка ---------
+          def cfg_name(cfg):
+              name = cfg.get("remarks", "") or ""
+              if not name:
+                  desc = (cfg.get("meta") or {}).get("serverDescription", "")
+                  if desc:
+                      try:
+                          name = base64.b64decode(desc).decode("utf-8", "ignore")
+                      except Exception:
+                          name = desc
+              if not name:
+                  outbound = next((o for o in cfg.get("outbounds", []) if o.get("protocol") and o.get("protocol") not in ("freedom","blackhole","dns")), None)
+                  name = (outbound or {}).get("protocol", "server")
+              return re.sub(r"[\x00-\x1f#]", " ", str(name)).strip() or "server"
+
+          def stream_params(ss):
+              q = {}
+              if not ss: return q
+              net = ss.get("network", "tcp")
+              q["type"] = net
+              if net == "ws":
+                  ws = ss.get("wsSettings", {}) or {}
+                  if ws.get("path"): q["path"] = ws["path"]
+                  if ws.get("headers", {}).get("Host"): q["host"] = ws["headers"]["Host"]
+              elif net == "grpc":
+                  gr = ss.get("grpcSettings", {}) or {}
+                  if gr.get("serviceName"): q["serviceName"] = gr["serviceName"]
+                  if gr.get("multiMode"):   q["mode"] = "multi"
+              elif net == "xhttp":
+                  xh = ss.get("xhttpSettings", {}) or {}
+                  if xh.get("host"): q["host"] = xh["host"]
+                  if xh.get("path"): q["path"] = xh["path"]
+                  if xh.get("mode"): q["mode"] = xh["mode"]
+              elif net == "tcp":
+                  tc = ss.get("tcpSettings", {}) or {}
+                  hdr = tc.get("header", {}) or {}
+                  if hdr.get("type") and hdr["type"] != "none":
+                      q["headerType"] = hdr["type"]
+
+              sec = ss.get("security", "none")
+              q["security"] = sec
+              if sec == "tls":
+                  tls = ss.get("tlsSettings", {}) or {}
+                  if tls.get("serverName"): q["sni"] = tls["serverName"]
+                  if tls.get("fingerprint"): q["fp"] = tls["fingerprint"]
+                  alpn = tls.get("alpn", [])
+                  if alpn: q["alpn"] = ",".join(alpn) if isinstance(alpn, list) else alpn
+              elif sec == "reality":
+                  rl = ss.get("realitySettings", {}) or {}
+                  if rl.get("serverName"):  q["sni"] = rl["serverName"]
+                  if rl.get("publicKey"):   q["pbk"] = rl["publicKey"]
+                  if rl.get("shortId"):     q["sid"] = rl["shortId"]
+                  if rl.get("fingerprint"): q["fp"] = rl["fingerprint"]
+                  if rl.get("spiderX"):     q["spx"] = rl["spiderX"]
+              return q
+
+          def qencode(d):
+              return "&".join(f"{k}={urllib.parse.quote(str(v), safe='')}" for k, v in d.items())
+
+          def cfg_to_link(cfg):
+              out = next((o for o in cfg.get("outbounds", [])
+                          if o.get("protocol") and o["protocol"] not in ("freedom","blackhole","dns")), None)
+              if not out: return None
+              proto = out["protocol"].lower()
+              ss = out.get("streamSettings", {}) or {}
+              q = stream_params(ss)
+              name = cfg_name(cfg)
+              frag = urllib.parse.quote(name, safe="")
+
+              if proto == "vless":
+                  vnext = out.get("settings", {}).get("vnext", [{}]) or [{}]
+                  user = (vnext[0].get("users", [{}]) or [{}])[0]
+                  host = vnext[0].get("address", "")
+                  port = vnext[0].get("port", "")
+                  uuid = user.get("id", "")
+                  enc = user.get("encryption", "none")
+                  flow = user.get("flow", "")
+                  if enc != "none": q["encryption"] = enc
+                  if flow: q["flow"] = flow
+                  return f"vless://{uuid}@{host}:{port}?{qencode(q)}#{frag}"
+
+              if proto == "vmess":
+                  vm = out.get("settings", {}).get("vnext", [{}])[0] or {}
+                  user = vm.get("users", [{}])[0] or {}
+                  obj = {
+                      "v": "2",
+                      "ps": name,
+                      "add": vm.get("address", ""),
+                      "port": int(vm.get("port", 0) or 0),
+                      "id": user.get("id", ""),
+                      "aid": int(user.get("alterId", 0) or 0),
+                      "net": q.get("type", "tcp"),
+                      "type": q.get("headerType", "none"),
+                      "host": q.get("host", ""),
+                      "path": q.get("path", ""),
+                      "tls": q.get("security", ""),
+                  }
+                  if "sni" in q: obj["sni"] = q["sni"]
+                  if "fp" in q: obj["fp"] = q["fp"]
+                  if "alpn" in q: obj["alpn"] = q["alpn"]
+                  return "vmess://" + base64.b64encode(json.dumps(obj, separators=(',',':')).encode()).decode()
+
+              if proto == "trojan":
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  pwd  = user.get("password", "")
+                  if "sni" not in q and "security" not in q:
+                      q["security"] = "tls"
+                  return f"trojan://{pwd}@{host}:{port}?{qencode(q)}#{frag}"
+
+              if proto in ("shadowsocks", "ss"):
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  method = user.get("method", "")
+                  pwd    = user.get("password", "")
+                  user_b64 = base64.b64encode(f"{method}:{pwd}".encode()).decode()
+                  return f"ss://{user_b64}@{host}:{port}#{frag}"
+
+              if proto in ("socks", "socks5"):
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  acc  = user.get("accounts", []) or []
+                  if acc:
+                      creds = f"{acc[0].get('user','')}:{acc[0].get('pass','')}"
+                      return f"socks://{base64.b64encode(creds.encode()).decode()}@{host}:{port}#{frag}"
+                  return f"socks://{host}:{port}#{frag}"
+
+              if proto == "wireguard":
+                  st = out.get("settings", {}) or {}
+                  priv = st.get("secretKey", "") or st.get("privateKey", "")
+                  peer = (st.get("peers", [{}]) or [{}])[0]
+                  pub  = peer.get("publicKey", "")
+                  addr = (st.get("address", [""]) or [""])[0]
+                  ep   = peer.get("endpoint", "")
+                  host = ep.split(":")[0]
+                  port = (ep + ":").split(":")[-1] or 51820
+                  q["publickey"] = pub
+                  if addr: q["address"] = addr
+                  reserved = peer.get("reserved")
+                  if reserved: q["reserved"] = ",".join(map(str, reserved))
+                  q["mtu"] = st.get("mtu", 1420)
+                  return f"wireguard://{priv}@{host}:{port}?{qencode(q)}#{frag}"
+
+              return None  # неизвестный протокол
+
+          # ------- фетчинг с косплеем Happ ---------
+          def fetch(c):
+              cmd = ["curl", "-sS", "--compressed", "--max-time", "30",
+                     "-H", f"User-Agent: {c['ua']}",
+                     "-H", f"X-Hwid: {c['hwid']}",
+                     "-H", f"X-Device-Os: {c['dos']}",
+                     "-H", f"X-Ver-Os: {c['ver']}",
+                     "-H", f"X-Device-Model: {c['model']}",
+                     "-H", "X-Device-Locale: ru",
+                     URL]
+              return subprocess.run(cmd, capture_output=True, text=True)
+
+          def valid(t):
+              t = t.strip()
+              if len(t) < 32: return False
+              low = t.lower()
+              if "<html" in low or "<!doctype" in low: return False
+              if "документация" in low or ("maximum vpn" in low and "://" not in t and not t.startswith("[")): return False
+              if t.startswith("[") or re.search(r"\"outbounds\"\s*:", t): return True
+              return bool(re.search(r"(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria|tuic)://", t)) or t.lstrip().startswith("#")
+
+          def unb64(t):
+              lines = [l for l in t.splitlines() if l.strip()]
+              if len(lines) != 1: return t
+              s = lines[0].strip()
+              if not re.fullmatch(r"[A-Za-z0-9+/=_-]{64,}", s): return t
+              for alt in (s, s.replace("-", "+").replace("_", "/")):
+                  try:
+                      dec = base64.b64decode(alt + "=" * (-len(alt) % 4)).decode("utf-8", "ignore")
+                  except Exception:
+                      continue
+                  if "://" in dec or dec.lstrip().startswith("[") or dec.startswith("#"):
+                      return dec
+              return t
+
+          body = None
+          for c in COMBOS:
+              r = fetch(c)
+              if r.returncode != 0:
+                  print("fetch fail:", r.stderr[:200]); continue
+              t = unb64(r.stdout)
+              if valid(t):
+                  body = t; print("OK:", c["ua"], c["hwid"]); break
+              print("мусор от", c["ua"], ":", t[:100].replace("\n", "\\n"))
+
+          if body is None:
+              sys.exit("ERROR: ни один UA/HWID не вернул подписку")
+
+          # отделяем #комменты панели от тела
+          lines = body.splitlines()
+          i = 0
+          while i < len(lines) and lines[i].lstrip().startswith("#"):
+              i += 1
+          srv = [l for l in lines[i:] if l.strip()]
+
+          # авто-детект: готовые ссылки или JSON-массив -> ссылки
+          links = []
+          if any(re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l) for l in srv):
+              links = [l for l in srv if re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l)]
+              print(f"формат: уже ссылки, строк={len(links)}")
+          else:
+              joined = "\n".join(srv).strip()
+              if joined.startswith("["):
+                  try:
+                      arr = json.loads(joined)
+                  except Exception:
+                      arr = None
+                  if isinstance(arr, list):
+                      for idx, cfg in enumerate(arr):
+                          if not isinstance(cfg, dict): continue
+                          try:
+                              lnk = cfg_to_link(cfg)
+                          except Exception as e:
+                              print(f"  [skip {idx}] {e}"); continue
+                          if lnk: links.append(lnk)
+                      print(f"формат: JSON массив, сконвертировано={len(links)}")
+              if not links:
+                  links = srv
+                  print("формат: неизвестный, вставил как есть")
+
+          if not links:
+              sys.exit("ERROR: после обработки серверов не осталось")
+
+          with open(OUT, "w", encoding="utf-8") as f:
+              f.write("\n".join(NEW_HEAD + links) + "\n")
+          print(f"wrote {OUT}, серверов: {len(links)}")
+          PY
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "без изменений"
+          else
+            git commit -m "max.json: auto update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          fi
