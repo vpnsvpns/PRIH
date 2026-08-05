@@ -19,7 +19,7 @@ jobs:
           python3 - <<'PY'
           import base64, json, re, subprocess, sys, urllib.parse
 
-          URL = "https://m1xzoocrrs1nezbe.mxm-secure.online/"
+          URL = "https://m1xzoocrRS1NeZbe.mxm-secure.online/"
           OUT = "max.json"
 
           NEW_HEAD = [
