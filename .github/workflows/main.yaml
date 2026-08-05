@@ -2,7 +2,7 @@ name: PrihVPN Mega Split Update
 
 on:
   schedule:
-    - cron: '0 * * * *' # Авто-запуск каждый час
+    - cron: '0 * * * *'   # Авто-запуск каждый час
   workflow_dispatch:      # Кнопка для ручного запуска
 
 jobs:
@@ -10,46 +10,41 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write     # Права на запись в репозиторий для github-actions[bot]
-      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Fetch and Process All Configs
         run: |
-          # 1. Безопасно создаем и принудительно очищаем целевые файлы перед работой (vpn.json полностью удален)
+          # 1. Безопасно создаем и принудительно очищаем целевые файлы
           touch white.json ros.json mifa.json
           echo -n "" > white.json
           echo -n "" > ros.json
           echo -n "" > mifa.json
-
           # Создаем и очищаем временные файлы буфера
           touch raw_white.txt temp_ros.txt temp_mifa.txt
           echo -n "" > raw_white.txt
           echo -n "" > temp_ros.txt
           echo -n "" > temp_mifa.txt
 
-          # 2. Скачиваем обычный текстовый источник (только белый список bwl)
-          curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || touch raw_white.txt
+          # 2. Скачиваем обычный текстовый источник (только белый список)
+          curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || true
 
           # 3. Скачиваем зашифрованные источники
-          curl -sL "https://raw.githubusercontent.com/yarikdron01-beep/Key-for-vpnFR/refs/heads/main/LexaConfigs" -o temp_ros.txt || touch temp_ros.txt
-          
+          curl -sL "https://raw.githubusercontent.com/yarikdron01-beep/Key-for-vpnFR/refs/heads/main/LexaConfigs" -o temp_ros.txt || true
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://mifa.world/bobrik" -o temp_mifa.txt || touch temp_mifa.txt
+               "https://mifa.world/bobrik" -o temp_mifa.txt || true
 
           # 4. Генерируем фирменные шапки заголовков БЕЗ таймстампов
           echo "#profile-update-interval: 1" > white.json
           echo "#profile-title: PrihVPN⚡ White" >> white.json
           echo "#announce: Все обновы в тг PrihsVPN!" >> white.json
           echo "" >> white.json
-
           echo "#profile-update-interval: 1" > ros.json
           echo "#profile-title: PrihVPN⚡ Ros" >> ros.json
           echo "#announce: Все обновы в тг PrihsVPN!" >> ros.json
           echo "" >> ros.json
-
           echo "#profile-update-interval: 1" > mifa.json
           echo "#profile-title: PrihVPN⚡ Mifa Full" >> mifa.json
           echo "#announce: Все обновы в тг PrihsVPN!" >> mifa.json
@@ -60,12 +55,12 @@ jobs:
             grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
           fi
 
-          # 6. Построчная обработка шифрованных файлов (декодируем каждую строчку отдельно)
+          # 6. Построчная обработка шифрованных файлов
           # Для ros.json
           if [ -s temp_ros.txt ]; then
             while IFS= read -r line || [ -n "$line" ]; do
-              [ -z "$line" ] && continue
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null)
+              if [ -z "$line" ]; then continue; fi
+              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
               echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> ros.json || true
             done < temp_ros.txt
           fi
@@ -73,23 +68,21 @@ jobs:
           # Для mifa.json
           if [ -s temp_mifa.txt ]; then
             while IFS= read -r line || [ -n "$line" ]; do
-              [ -z "$line" ] && continue
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null)
+              if [ -z "$line" ]; then continue; fi
+              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
               echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
             done < temp_mifa.txt
           fi
-          
+
           # 7. Выметаем весь временный мусор
           rm -f raw_white.txt temp_ros.txt temp_mifa.txt
+
+          # 8. Страховка: шаг всегда завершается с нулевым кодом
+          exit 0
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Индексируем только три оставшихся файла
           git add white.json ros.json mifa.json
-          
-          # Пушим обновления одной транзакцией
-          git commit -m "Mega Split Update (Clean Headers): $(date +'%H:%M:%S')" || echo "No changes to commit"
-          git push origin main || git push --force
+          git commit -m "Mega Split Update (Clean Headers): $(date +'%H:%M:%S')" || echo "No changes
