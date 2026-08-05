@@ -22,12 +22,6 @@ jobs:
           URL = "https://m1xzoocrRS1NeZbe.mxm-secure.online/"
           OUT = "max.json"
 
-          NEW_HEAD = [
-              "#profile-update-interval: 1",
-              "#profile-title: PrihVPN⚡️ Max",
-              "#announce: Все обновы в тг PrihsVPN!",
-          ]
-
           COMBOS = [
               dict(ua="Happ/3.13.0", hwid="7bfa9b8f-d678-4e6d-8eec-1b0e795db16b", dos="Android", ver="15",     model="ELP-NX1"),
               dict(ua="Happ/3.13.0", hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
@@ -61,17 +55,17 @@ jobs:
               return t
 
           def split_body(t):
-              """возвращает серверную часть КАК ЕСТЬ (список строк) или None"""
+              """серверная часть КАК В ОРИГИНАЛЕ (чистый JSON-массив) или None"""
               low = t.lower()
               if "<html" in low or "<!doctype" in low or "документация" in low:
                   return None
               lines = t.splitlines()
               i = 0
               while i < len(lines) and lines[i].lstrip().startswith("#"):
-                  i += 1                      # родные #комменты панели
+                  i += 1                      # если у панели были #комменты — скипаем
               rest = lines[i:]
               joined = "\n".join(rest).strip()
-              if not joined.startswith("["):  # оригинал = JSON-массив
+              if not joined.startswith("["):
                   return None
               try:
                   arr = json.loads(joined)
@@ -79,28 +73,25 @@ jobs:
                   return None
               if not isinstance(arr, list) or not arr:
                   return None
-              return rest
+              return joined
 
-          rest = None
+          joined = None
           for c in COMBOS:
               r = fetch(c)
               if r.returncode != 0:
                   print("fetch fail:", r.stderr[:200]); continue
-              rest = split_body(unb64(r.stdout))
-              if rest is not None:
+              joined = split_body(unb64(r.stdout))
+              if joined is not None:
                   print("OK:", c["ua"], c["hwid"]); break
               print("не оригинал от", c["ua"])
 
-          if rest is None:
+          if joined is None:
               sys.exit("ERROR: не получил оригинальный JSON-массив от панели")
 
-          while rest and not rest[0].strip():
-              rest.pop(0)
-
-          # 3 строчки шапки + серверный JSON байт-в-байт как в оригинале
+          # чистый массив, без #шапки — ровно как оригинал
           with open(OUT, "w", encoding="utf-8") as f:
-              f.write("\n".join(NEW_HEAD + rest).rstrip() + "\n")
-          print("wrote", OUT)
+              f.write(joined + "\n")
+          print("wrote", OUT, "| байт:", len(joined.encode("utf-8")))
           PY
 
       - name: Commit & push
