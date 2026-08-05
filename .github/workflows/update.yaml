@@ -2,7 +2,7 @@ name: parse-max
 
 on:
   schedule:
-    - cron: "0 * * * *"   # каждый час
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,13 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch & convert
+      - name: Fetch, split & convert
         run: |
           python3 - <<'PY'
-          import base64, json, re, subprocess, sys, urllib.parse
+          import base64, json, os, re, subprocess, sys, urllib.parse
 
           URL = "https://m1xzoocrRS1NeZbe.mxm-secure.online/"
           OUT = "max.json"
+          SRC_DIR = "src"
 
           NEW_HEAD = [
               "#profile-update-interval: 1",
@@ -35,7 +36,7 @@ jobs:
               dict(ua="Happ/1.0",    hwid="ed4c60ee57dda4f8",                     dos="iOS",     ver="18.7.2", model="iPhone 14 Pro"),
           ]
 
-          # ------- парсер JSON-конфига -> ссылка ---------
+          # ------- парсеры и конвертеры (из прошлой версии) -------
           def cfg_name(cfg):
               name = cfg.get("remarks", "") or ""
               if not name:
@@ -48,7 +49,6 @@ jobs:
               if not name:
                   outbound = next((o for o in cfg.get("outbounds", []) if o.get("protocol") and o.get("protocol") not in ("freedom","blackhole","dns")), None)
                   name = (outbound or {}).get("protocol", "server")
-              # чистим невалидные символы для fragment (#)
               return re.sub(r"[\x00-\x1f#]", " ", str(name)).strip() or "server"
 
           def stream_params(ss):
@@ -117,99 +117,71 @@ jobs:
                   return f"vless://{uuid}@{host}:{port}?{qencode(q)}#{frag}"
 
               if proto == "vmess":
-                vm = out.get("settings", {}).get("vnext", [{}])[0] or {}
-                user = vm.get("users", [{}])[0] or {}
-                obj = {
-                    "v": "2",
-                    "ps": name,
-                    "add": vm.get("address", ""),
-                    "port": int(vm.get("port", 0) or 0),
-                    "id": user.get("id", ""),
-                    "aid": int(user.get("alterId", 0) or 0),
-                    "net": q.get("type", "tcp"),
-                    "type": q.get("headerType", "none"),
-                    "host": q.get("host", ""),
-                    "path": q.get("path", ""),
-                    "tls": q.get("security", ""),
-                }
-                if "sni" in q: obj["sni"] = q["sni"]
-                if "fp" in q: obj["fp"] = q["fp"]
-                if "alpn" in q: obj["alpn"] = q["alpn"]
-                return "vmess://" + base64.b64encode(json.dumps(obj, separators=(',',':')).encode()).decode()
+                  vm = out.get("settings", {}).get("vnext", [{}])[0] or {}
+                  user = vm.get("users", [{}])[0] or {}
+                  obj = {
+                      "v": "2",
+                      "ps": name,
+                      "add": vm.get("address", ""),
+                      "port": int(vm.get("port", 0) or 0),
+                      "id": user.get("id", ""),
+                      "aid": int(user.get("alterId", 0) or 0),
+                      "net": q.get("type", "tcp"),
+                      "type": q.get("headerType", "none"),
+                      "host": q.get("host", ""),
+                      "path": q.get("path", ""),
+                      "tls": q.get("security", ""),
+                  }
+                  if "sni" in q: obj["sni"] = q["sni"]
+                  if "fp" in q: obj["fp"] = q["fp"]
+                  if "alpn" in q: obj["alpn"] = q["alpn"]
+                  return "vmess://" + base64.b64encode(json.dumps(obj, separators=(',',':')).encode()).decode()
 
               if proto == "trojan":
-                user = out.get("settings", {}).get("servers", [{}])[0] or {}
-                host = user.get("address", "")
-                port = user.get("port", "")
-                pwd  = user.get("password", "")
-                if "sni" not in q and "security" not in q:
-                    q["security"] = "tls"
-                return f"trojan://{pwd}@{host}:{port}?{qencode(q)}#{frag}"
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  pwd  = user.get("password", "")
+                  if "sni" not in q and "security" not in q:
+                      q["security"] = "tls"
+                  return f"trojan://{pwd}@{host}:{port}?{qencode(q)}#{frag}"
 
               if proto == "shadowsocks" or proto == "ss":
-                user = out.get("settings", {}).get("servers", [{}])[0] or {}
-                host = user.get("address", "")
-                port = user.get("port", "")
-                method = user.get("method", "")
-                pwd    = user.get("password", "")
-                user_b64 = base64.b64encode(f"{method}:{pwd}".encode()).decode()
-                return f"ss://{user_b64}@{host}:{port}#{frag}"
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  method = user.get("method", "")
+                  pwd    = user.get("password", "")
+                  user_b64 = base64.b64encode(f"{method}:{pwd}".encode()).decode()
+                  return f"ss://{user_b64}@{host}:{port}#{frag}"
 
               if proto == "socks" or proto == "socks5":
-                user = out.get("settings", {}).get("servers", [{}])[0] or {}
-                host = user.get("address", "")
-                port = user.get("port", "")
-                acc  = user.get("accounts", []) or []
-                if acc:
-                    creds = f"{acc[0].get('user','')}:{acc[0].get('pass','')}"
-                    return f"socks://{base64.b64encode(creds.encode()).decode()}@{host}:{port}#{frag}"
-                return f"socks://{host}:{port}#{frag}"
+                  user = out.get("settings", {}).get("servers", [{}])[0] or {}
+                  host = user.get("address", "")
+                  port = user.get("port", "")
+                  acc  = user.get("accounts", []) or []
+                  if acc:
+                      creds = f"{acc[0].get('user','')}:{acc[0].get('pass','')}"
+                      return f"socks://{base64.b64encode(creds.encode()).decode()}@{host}:{port}#{frag}"
+                  return f"socks://{host}:{port}#{frag}"
 
               if proto == "wireguard":
-                priv = out.get("settings", {}).get("secretKey", "") or out.get("settings", {}).get("privateKey", "")
-                pub  = out.get("settings", {}).get("peers", [{}])[0].get("publicKey", "")
-                addr = out.get("settings", {}).get("address", [""])[0]
-                host = out.get("settings", {}).get("peers", [{}])[0].get("endpoint", "").split(":")[0]
-                port = (out.get("settings", {}).get("peers", [{}])[0].get("endpoint", "")+":").split(":")[-1] or 51820
-                q["publickey"] = pub
-                if addr: q["address"] = addr
-                reserved = out.get("settings", {}).get("peers", [{}])[0].get("reserved")
-                if reserved: q["reserved"] = ",".join(map(str, reserved))
-                mtu = out.get("settings", {}).get("mtu", 1420)
-                q["mtu"] = mtu
-                return f"wireguard://{priv}@{host}:{port}?{qencode(q)}#{frag}"
+                  priv = out.get("settings", {}).get("secretKey", "") or out.get("settings", {}).get("privateKey", "")
+                  pub  = out.get("settings", {}).get("peers", [{}])[0].get("publicKey", "")
+                  addr = out.get("settings", {}).get("address", [""])[0]
+                  host = out.get("settings", {}).get("peers", [{}])[0].get("endpoint", "").split(":")[0]
+                  port = (out.get("settings", {}).get("peers", [{}])[0].get("endpoint", "")+":").split(":")[-1] or 51820
+                  q["publickey"] = pub
+                  if addr: q["address"] = addr
+                  reserved = out.get("settings", {}).get("peers", [{}])[0].get("reserved")
+                  if reserved: q["reserved"] = ",".join(map(str, reserved))
+                  mtu = out.get("settings", {}).get("mtu", 1420)
+                  q["mtu"] = mtu
+                  return f"wireguard://{priv}@{host}:{port}?{qencode(q)}#{frag}"
 
-              return None  # неизвестный протокол
+              return None
 
-          # ------- конвертация всего блока серверов -------
-          def try_json_array(text):
-              t = text.strip()
-              if not t.startswith("["): return None
-              try:
-                  arr = json.loads(t)
-              except Exception:
-                  return None
-              if not isinstance(arr, list): return None
-              links = []
-              for i, cfg in enumerate(arr):
-                  if not isinstance(cfg, dict): continue
-                  try:
-                      lnk = cfg_to_link(cfg)
-                  except Exception as e:
-                      print(f"  [skip {i}] {e}")
-                      continue
-                  if lnk: links.append(lnk)
-              return links
-
-          def try_links(text):
-              res = []
-              for line in text.splitlines():
-                  l = line.strip()
-                  if re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l):
-                      res.append(l)
-              return res
-
-          # ------- фетчинг с косплеем Happ ---------
+          # ------- фетчинг -------
           def fetch(c):
               cmd = ["curl", "-sS", "--compressed", "--max-time", "30",
                      "-H", f"User-Agent: {c['ua']}",
@@ -257,47 +229,82 @@ jobs:
           if body is None:
               sys.exit("ERROR: ни один UA/HWID не вернул подписку")
 
-          # отделяем #комменты панели от тела
           lines = body.splitlines()
-          hdr, srv = [], []
+          srv = []
           i = 0
           while i < len(lines) and lines[i].lstrip().startswith("#"):
-              hdr.append(lines[i]); i += 1
+              i += 1
           while i < len(lines):
               srv.append(lines[i]); i += 1
           srv = [l for l in srv if l.strip()]
 
-          # авто-детект и конвертация
+          # ------- новая логика: отдельные JSON-файлы + агрегатор -------
+          os.makedirs(SRC_DIR, exist_ok=True)
+
+          # удаляем старые файлы серверов (кроме .gitkeep если есть)
+          for f in os.listdir(SRC_DIR):
+              if f.endswith(".json"):
+                  os.remove(os.path.join(SRC_DIR, f))
+
+          servers = []
           links = []
-          if any(re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l) for l in srv):
-              links = [l for l in srv if re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l)]
-              print(f"формат: уже ссылки, строк={len(links)}")
-          else:
-              arr = try_json_array("\n".join(srv))
-              if arr is not None:
-                  links = arr
-                  print(f"формат: JSON массив, сконвертировано={len(links)}")
-              else:
-                  # последняя попытка: может это просто список ссылок без префиксов протоколов (маловероятно)
-                  links = [l for l in srv if l.strip()]
-                  print("формат: неизвестный, вставил как есть")
+
+          # проверяем, что это JSON-массив
+          joined = "\n".join(srv)
+          if joined.strip().startswith("["):
+              try:
+                  arr = json.loads(joined)
+                  if isinstance(arr, list):
+                      for idx, cfg in enumerate(arr):
+                          if not isinstance(cfg, dict): continue
+                          name = cfg_name(cfg)
+                          safe_name = re.sub(r"[^\w\-_.]", "_", name)[:50]
+                          filename = f"{idx:03d}_{safe_name}.json"
+                          filepath = os.path.join(SRC_DIR, filename)
+                          with open(filepath, "w", encoding="utf-8") as f:
+                              json.dump(cfg, f, indent=2, ensure_ascii=False)
+                          servers.append({"file": filename, "config": cfg})
+                          try:
+                              lnk = cfg_to_link(cfg)
+                              if lnk: links.append(lnk)
+                          except Exception as e:
+                              print(f"  [skip {idx}] {e}")
+                      print(f"формат: JSON массив, серверов={len(servers)}, ссылок={len(links)}")
+              except Exception as e:
+                  print(f"JSON parse error: {e}")
+
+          # если не JSON или парсинг упал — берём как ссылки
+          if not servers:
+              for l in srv:
+                  if re.match(r"^(vless|vmess|trojan|ss|ssr|socks|wireguard|hysteria2?|tuic)://", l):
+                      links.append(l)
+              print(f"формат: готовые ссылки, строк={len(links)}")
 
           if not links:
               sys.exit("ERROR: после обработки серверов не осталось")
 
+          # записываем агрегатор
           with open(OUT, "w", encoding="utf-8") as f:
               f.write("\n".join(NEW_HEAD + links) + "\n")
-          print(f"wrote {OUT}, серверов: {len(links)}")
+          print(f"wrote {OUT}, серверов в src/: {len(servers)}, ссылок: {len(links)}")
+
+          # создаём README в src/ для документации
+          readme_path = os.path.join(SRC_DIR, "README.md")
+          if not os.path.exists(readme_path):
+              with open(readme_path, "w", encoding="utf-8") as f:
+                  f.write("# Серверы Maximum VPN\n\n")
+                  f.write("Автоматически парсятся из подписки и сохраняются как отдельные JSON-файлы.\n\n")
+                  f.write(f"Всего серверов: {len(servers)}\n")
           PY
 
       - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add max.json
+          git add max.json src/
           if git diff --cached --quiet; then
             echo "без изменений"
           else
-            git commit -m "max.json: auto update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git commit -m "update: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             git push
           fi
