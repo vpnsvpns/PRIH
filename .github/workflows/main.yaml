@@ -16,74 +16,75 @@ jobs:
 
       - name: Fetch and Process All Configs
         run: |
-          # 1. Безопасно создаем и принудительно очищаем целевые файлы
-          touch white.json ros.json mifa.json
-          echo -n "" > white.json
-          echo -n "" > ros.json
-          echo -n "" > mifa.json
-          # Создаем и очищаем временные файлы буфера
-          touch raw_white.txt temp_ros.txt temp_mifa.txt
-          echo -n "" > raw_white.txt
-          echo -n "" > temp_ros.txt
-          echo -n "" > temp_mifa.txt
+          # Паттерн поиска ссылок (vless / trojan / ss / hysteria2)
+          RE="(vless|trojan|ss|hysteria2)://[^[:space:]\"']+"
 
-          # 2. Скачиваем обычный текстовый источник (белый список)
+          # Универсальный парсер:
+          # 1) ищет открытые ссылки в тексте
+          # 2) если пусто — декодирует файл целиком как один base64
+          # 3) если пусто — декодирует построчно
+          parse_into() {
+            src="$1"; dst="$2"; tmp="$3"
+            : > "$tmp"
+            grep -E -o -i "$RE" "$src" 2>/dev/null | grep -v "0.0.0.0" | awk '!seen[$0]++' > "$tmp" || true
+            if ! grep -q . "$tmp"; then
+              base64 -d -i "$src" 2>/dev/null | grep -E -o -i "$RE" | grep -v "0.0.0.0" | awk '!seen[$0]++' > "$tmp" || true
+            fi
+            if ! grep -q . "$tmp"; then
+              while IFS= read -r line || [ -n "$line" ]; do
+                if [ -z "$line" ]; then continue; fi
+                printf '%s\n' "$line" | tr -d '\r' | base64 -d -i 2>/dev/null | grep -E -o -i "$RE" | grep -v "0.0.0.0" >> "$tmp" || true
+              done < "$src"
+              (awk '!seen[$0]++' "$tmp" > "$tmp.dedup" && mv "$tmp.dedup" "$tmp") || true
+            fi
+            cat "$tmp" >> "$dst"
+          }
+
+          # 1. Создаем и принудительно очищаем целевые файлы и буферы
+          : > white.json
+          : > ros.json
+          : > mifa.json
+          : > raw_white.txt
+          : > temp_ros.txt
+          : > temp_mifa.txt
+          : > tmp_links.txt
+
+          # 2. Скачиваем источники
           curl -sLf "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt" >> raw_white.txt || true
-
-          # 3. Скачиваем зашифрованные источники
           curl -sL "https://raw.githubusercontent.com/yarikdron01-beep/Key-for-vpnFR/refs/heads/main/LexaConfigs" -o temp_ros.txt || true
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
                "https://mifa.world/bobrik" -o temp_mifa.txt || true
 
-          # 4. Генерируем фирменные шапки заголовков БЕЗ таймстампов
-          echo "#profile-update-interval: 1" > white.json
-          echo "#profile-title: PrihVPN⚡ White" >> white.json
-          echo "#announce: Все обновы в тг PrihsVPN!" >> white.json
-          echo "" >> white.json
-          echo "#profile-update-interval: 1" > ros.json
-          echo "#profile-title: PrihVPN⚡ Ros" >> ros.json
-          echo "#announce: Все обновы в тг PrihsVPN!" >> ros.json
-          echo "" >> ros.json
-          echo "#profile-update-interval: 1" > mifa.json
-          echo "#profile-title: PrihVPN⚡ Mifa Full" >> mifa.json
-          echo "#announce: Все обновы в тг PrihsVPN!" >> mifa.json
-          echo "" >> mifa.json
+          # 3. Генерируем фирменные шапки БЕЗ таймстампов
+          {
+            echo "#profile-update-interval: 1"
+            echo "#profile-title: PrihVPN⚡ White"
+            echo "#announce: Все обновы в тг PrihsVPN!"
+            echo ""
+          } > white.json
+          {
+            echo "#profile-update-interval: 1"
+            echo "#profile-title: PrihVPN⚡ Ros"
+            echo "#announce: Все обновы в тг PrihsVPN!"
+            echo ""
+          } > ros.json
+          {
+            echo "#profile-update-interval: 1"
+            echo "#profile-title: PrihVPN⚡ Mifa Full"
+            echo "#announce: Все обновы в тг PrihsVPN!"
+            echo ""
+          } > mifa.json
 
-          # 5. Обработка текстовых файлов (прямой поиск через grep)
-          if [ -s raw_white.txt ]; then
-            grep -E -i "^(vless|trojan|ss|hysteria2)://" raw_white.txt | grep -v "0.0.0.0" >> white.json || true
-          fi
+          # 4. Парсим все три источника универсальным парсером
+          parse_into raw_white.txt white.json tmp_links.txt
+          parse_into temp_ros.txt  ros.json  tmp_links.txt
+          parse_into temp_mifa.txt mifa.json tmp_links.txt
 
-          # 6. ROS: построчное декодирование (там по строке на ключ)
-          if [ -s temp_ros.txt ]; then
-            while IFS= read -r line || [ -n "$line" ]; do
-              if [ -z "$line" ]; then continue; fi
-              decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
-              echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> ros.json || true
-            done < temp_ros.txt
-          fi
+          # 5. Выметаем весь временный мусор
+          rm -f raw_white.txt temp_ros.txt temp_mifa.txt tmp_links.txt
 
-          # 7. MIFA: источник — один большой base64 с переносами,
-          #    поэтому декодируем файл ЦЕЛИКОМ; построчно — только фолбэк
-          if [ -s temp_mifa.txt ]; then
-            base64 -d -i temp_mifa.txt > decoded_mifa.txt 2>/dev/null || true
-            if grep -q -E -i "(vless|trojan|ss|hysteria2)://" decoded_mifa.txt; then
-              grep -E -i "(vless|trojan|ss|hysteria2)://" decoded_mifa.txt | grep -v "0.0.0.0" >> mifa.json || true
-            else
-              while IFS= read -r line || [ -n "$line" ]; do
-                if [ -z "$line" ]; then continue; fi
-                decoded=$(echo "$line" | tr -d '\r' | base64 -d -i 2>/dev/null || true)
-                echo "$decoded" | grep -E -i "(vless|trojan|ss|hysteria2)://" | grep -v "0.0.0.0" >> mifa.json || true
-              done < temp_mifa.txt
-            fi
-            rm -f decoded_mifa.txt
-          fi
-
-          # 8. Выметаем весь временный мусор
-          rm -f raw_white.txt temp_ros.txt temp_mifa.txt
-
-          # 9. Страховка: шаг всегда завершается с нулевым кодом
+          # 6. Страховка: шаг всегда завершается с нулевым кодом
           exit 0
 
       - name: Commit and Push
