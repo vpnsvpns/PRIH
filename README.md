@@ -77,6 +77,8 @@ https://vpnsvpns.github.io/Prihs/white.json
 > * **💻 На ПК:** [tg-ws-proxy для ПК](https://sourceforge.net/projects/tg-ws-proxy.mirror/files/)
 > * **🤖 На Android:** [tg-ws-proxy-android для Android](https://github.com/amurcanov/tg-ws-proxy-android)
 
+**ИЩЕМ ПРОКСИ НОВЫЕ ПРОКСИ В БОТЕ - @proxselink_bot!**
+
 ### ⚡ Обычные прокси
 
 | Название | Автоматическое подключение | Скопировать ссылку для браузера |
