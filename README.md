@@ -92,11 +92,9 @@ https://vpnsvpns.github.io/Prihs/white.json
 
 ### 🛡️ Прокси для «Белых списков» (Работает и на обычном интернете)
 
-| Название | Автоматическое подключение | Скопировать ссылку для браузера |
+| Название |
 | :--- | :---: | :--- |
-| **ДЛЯ БЕЛЫХ СПИСКОВ** | [🔒 Применить по клику](https://t.me/proxy?server=213.219.212.17&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665) | `tg://proxy?server=213.219.212.17&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665` |
-| **ДЛЯ БЕЛЫХ СПИСКОВ 2** | [🔒 Применить по клику](https://t.me/proxy?server=213.219.212.16&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665) | `tg://proxy?server=213.219.212.16&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665` |
-| **ДЛЯ БЕЛЫХ СПИСКОВ 3** | [🔒 Применить по клику](https://t.me/proxy?server=213.219.212.4&port=443&secret=dd9e1dde0de02a2e7c22d10e2fff841013) | `tg://proxy?server=213.219.212.4&port=443&secret=dd9e1dde0de02a2e7c22d10e2fff841013` |
+| **СТАБИЛЬНЫХ СЕЙЧАС НЕТУ**
 
 ## 🎯 DNS для Игр (Brawl Stars и другие) и ИИ (Gemini и Другие)
 
