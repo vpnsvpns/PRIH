@@ -54,7 +54,7 @@ jobs:
           curl -sL "https://raw.githubusercontent.com/yarikdron01-beep/Key-for-vpnFR/refs/heads/main/LexaConfigs" -o temp_ros.txt || true
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://mifa.world/rion" -o temp_mifa.txt || true
+               "https://sub.vlessfo.ru/vlessforu/working_configs.txt" -o temp_mifa.txt || true
 
           # 3. Генерируем фирменные шапки БЕЗ таймстампов
           {
