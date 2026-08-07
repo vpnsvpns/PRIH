@@ -81,12 +81,14 @@ https://vpnsvpns.github.io/Prihs/white.json
 
 | Название | Автоматическое подключение | Скопировать ссылку для браузера |
 | :--- | :---: | :--- |
-| **Обычный 1** | [🚀 Применить по клику](https://t.me/proxy?server=72.60.186.130&port=8444&secret=dd21bb689a715bb089460f14cd7b18f933) | `tg://proxy?server=72.60.186.130&port=8444&secret=dd21bb689a715bb089460f14cd7b18f933` |
-| **Обычный 2** | [🚀 Применить по клику](https://t.me/proxy?server=data.n3o.lol&port=5432&secret=04040404000044440000444404040000) | `tg://proxy?server=data.n3o.lol&port=5432&secret=04040404000044440000444404040000` |
-| **Обычный 3** | [🚀 Применить по клику](https://t.me/proxy?server=crow.anime-fox.ru&port=443&secret=8f3c7a1d4b92e6c51a7d0fb843c2e91f) | `tg://proxy?server=crow.anime-fox.ru&port=443&secret=8f3c7a1d4b92e6c51a7d0fb843c2e91f` |
-| **Обычный 4** | [🚀 Применить по клику](https://t.me/proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477) | `tg://proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477` |
-| **Обычный 5** | [🚀 Применить по клику](https://t.me/proxy?server=62.84.115.161&port=443&secret=79e474b3733862d2a2a1cc54333b3fcc) | `tg://proxy?server=62.84.115.161&port=443&secret=79e474b3733862d2a2a1cc54333b3fcc` |
-| **Обычный 6** | [🚀 Применить по клику](https://t.me/proxy?server=proxy.tonservice.site&port=8443&secret=dd00000000000000000000000000000000) | `tg://proxy?server=proxy.tonservice.site&port=8443&secret=dd00000000000000000000000000000000` |
+| **Обычный 1** | [🚀 Применить по клику](https://t.me/proxy?server=gamma-roxy.ip-ddns.com&port=443&secret=7pT8K0hK9uHhyH5ldrM8JXV2ay5jb20) | `tg://proxy?server=gamma-roxy.ip-ddns.com&port=443&secret=7pT8K0hK9uHhyH5ldrM8JXV2ay5jb20` |
+| **Обычный 2** | [🚀 Применить по клику](https://t.me/proxy?server=37.139.34.242&port=443&secret=dd2ed7517b077ef414e24b106e0729335d) | `tg://proxy?server=37.139.34.242&port=443&secret=dd2ed7517b077ef414e24b106e0729335d` |
+| **Обычный 3** | [🚀 Применить по клику](https://t.me/proxy?server=tgnn.live&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665) | `tg://proxy?server=tgnn.live&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665` |
+| **Обычный 4** | [🚀 Применить по клику](https://t.me/proxy?server=protect.prx.mom&port=443&secret=eee8dc90a0a7661d074e78ea12b84126bc70726f746563742e7072782e6d6f6d) | `tg://proxy?server=protect.prx.mom&port=443&secret=eee8dc90a0a7661d074e78ea12b84126bc70726f746563742e7072782e6d6f6d` |
+| **Обычный 5 (Стабильный)** | [🚀 Применить по клику](https://t.me/proxy?server=91.108.249.27&port=7000&secret=ee5e096b25472d0fcb6e66cebbd7a14b) | `tg://proxy?server=91.108.249.27&port=7000&secret=ee5e096b25472d0fcb6e66cebbd7a14b` |
+| **Обычный 6** | [🚀 Применить по клику](https://t.me/proxy?server=37.139.35.8&port=443&secret=ee2b36bf4b66aa5454903e1f63fdef88bc7777772e6d6963726f736f66742e636f6d) | `tg://proxy?server=37.139.35.8&port=443&secret=ee2b36bf4b66aa5454903e1f63fdef88bc7777772e6d6963726f736f66742e636f6d` |
+| **Обычный 7** | [🚀 Применить по клику](https://t.me/proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477) | `tg://proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477` |
+| **Обычный 8** | [🚀 Применить по клику](https://t.me/proxy?server=fast.prx.mom&port=443&secret=ee4ab57d7496fa8fed3fc2cd1cea6ee1b7666173742e7072782e6d6f6d) | `tg://proxy?server=fast.prx.mom&port=443&secret=ee4ab57d7496fa8fed3fc2cd1cea6ee1b7666173742e7072782e6d6f6d` |
 
 ### 🛡️ Прокси для «Белых списков» (Работает и на обычном интернете)
 
