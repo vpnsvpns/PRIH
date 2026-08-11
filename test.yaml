@@ -1,0 +1,24 @@
+proxy-groups:
+  - name: Vless
+    type: select
+    use:
+      - sub_vless
+    icon: https://i.imgur.com/B3HrpPC.png
+
+proxy-providers:
+  sub_vless:
+    type: http
+    url: "https://sub.vlessfo.ru/vlessforu/working_configs.txt"
+    path: ./proxy_providers/sub_vless.yml
+    override:
+      udp: true
+    health-check:
+      enable: true
+      url: http://connectivitycheck.gstatic.com/generate_204
+      interval: 300
+      timeout: 5000
+      lazy: true
+
+rules:
+  - GEOIP,RU,DIRECT
+  - MATCH,Vless
