@@ -2,31 +2,30 @@
 #profile-title: PrihVPN⚡ Mifa Full
 #announce: Все обновы в тг PrihsVPN!
 
-vless://7bc48a0c-0943-42fd-a138-98ca90f941c5@144.31.165.117:2096?alpn=h2&authority=justvpnchik.duckdns.org&encryption=none&fp=firefox&security=tls&serviceName=vless-grpc-tls&sni=justvpnchik.duckdns.org&type=grpc#tg:VlessForU
+vless://8e8cc759-f351-45d2-94f8-0f66d0972f97@193.233.198.220:443?encryption=none&fp=firefox&pbk=NUefKitvfMI864jgqEtNRuPWjLMLj1YfLb7w8tXZv3k&security=reality&sid=a1b2c3d4&sni=www.ya.ru&type=tcp#tg:VlessForU
 vless://2cb6b4d9-0c74-45e2-a4fb-645bb8ac532a@200.165.225.234:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=V2JprbR_aJkS7uX6anyU3nrswGxdvDQT2HpY4WnzuC8&security=reality&sid=5629431325884ff0&sni=rf6.o4ka-internet.com&type=tcp#tg:VlessForU
-vless://fd12bf77-bca4-4ccc-8bd0-76a2cfc5985a@194.55.239.164:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&security=reality&sid=c427&sni=ads.vk.ru&type=raw#LTE
 vless://c099de6a-0805-0002-b959-fd4ab4fc209e@46.8.210.166:443?security=reality&encryption=none&sni=smartcaptcha.yandexcloud.net&fp=firefox&pbk=DM3bRAvFPKomKjjmatlS2dH5VYZnUkPHw0BmA40kI2k&sid=0f4daaf87f9dff&flow=xtls-rprx-vision#LTE
 vless://463a26c2-eba8-40ea-89c4-ee5c1373ccbe@185.91.54.143:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=4bcxPPoEZUA0xgDhPrGRCwtq984u00bVdKSM_wXtBi4&security=reality&sid=8dad4f13199305c8&sni=eda.x5.ru&type=raw#LTE
 vless://463a26c2-eba8-40ea-89c4-ee5c1373ccbe@vrusl-e.mostserv.xyz:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=4bcxPPoEZUA0xgDhPrGRCwtq984u00bVdKSM_wXtBi4&sid=8dad4f13199305c8&sni=eda.x5.ru#LTE
 vless://bd33c069-8f8c-4da3-9d14-9f539597ab66@176.109.88.216:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=oqRus6Z_Q1jqJaTEPu7ENbRL0-XKOw54K0jwCCGLtEk&security=reality&sid=a9c4f17e3b62d8&sni=api-maps.yandex.ru&type=raw#LTE
 vless://bd33c069-8f8c-4da3-9d14-9f539597ab66@176.109.88.216:443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=api-maps.yandex.ru&fp=qq&pbk=oqRus6Z_Q1jqJaTEPu7ENbRL0-XKOw54K0jwCCGLtEk&sid=a9c4f17e3b62d8&type=tcp&headerType=none#LTE
+vless://ee791990-83c7-11f1-9ca5-1e6febe3e1df@95.163.183.68:2053?encryption=none&fp=firefox&pbk=WUY8Lb4LfUUKLzZK3oSlRAdoy-Iu0w3Ait1-jtxbW1M&security=reality&serviceName=grpc-direct&sid=e432eea05ffadf84&sni=hh.ru&type=grpc#SNi
+vless://1cf0f330-88c6-5b9b-866e-607e08cf87d6@185.72.145.121:5000?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=0XUuWS1x6kswbVN0rgXLpZ1pTCgnyhk7ItuoklaNoHI&security=reality&sid=9e&sni=www.vk.com&spx=/IQj85DYYi5bhobP&type=tcp#SNi
+vless://6a0a3a97-f063-5599-b5fa-2b5ad599a683@132.243.207.38:5000?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=0qifn7FGo1Fv6bAhw29gy5SmVHcWarBfIHTUPOwpXVs&security=reality&sid=360e&sni=www.vk.com&spx=/Z6qxGGgHtkdLzlM&type=tcp#SNi
+vless://8e8cc759-f351-45d2-94f8-0f66d0972f97@153.80.249.67:443?encryption=none&fp=firefox&pbk=eJfq8tU0Ei_lWSK8YmHlwJDvL1cVe2v-L1y9obk_zxc&security=reality&sid=a1b2c3d4&sni=www.ya.ru&type=tcp#SNi
 vless://353dd008-94f3-44b5-80f3-192b74de7b40@90.156.218.236:443?encryption=none&fp=firefox&mode=gun&pbk=VaKp9XjMqT7lA4F3b6hpdF6fmsiY4B_hz6MzT6fv938&security=reality&sni=360.yandex.ru&type=grpc#SNi
 vless://1f35c4eb-e4fa-5a62-b0e1-b557983b34c7@132.243.207.38:4443?encryption=none&fp=firefox&pbk=wg5YJMYIcqRU9X9U54TRzKIIw5aUyxIEI3tL_jck5WU&security=reality&sid=44&sni=www.vk.com&spx=/YYVijy2UjvDxoyh&type=grpc#SNi
-vless://1cf0f330-88c6-5b9b-866e-607e08cf87d6@185.72.145.121:5000?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=0XUuWS1x6kswbVN0rgXLpZ1pTCgnyhk7ItuoklaNoHI&security=reality&sid=9e&sni=www.vk.com&spx=/IQj85DYYi5bhobP&type=tcp#SNi
-vless://ee791990-83c7-11f1-9ca5-1e6febe3e1df@95.163.183.68:2053?encryption=none&fp=firefox&pbk=WUY8Lb4LfUUKLzZK3oSlRAdoy-Iu0w3Ait1-jtxbW1M&security=reality&serviceName=grpc-direct&sid=e432eea05ffadf84&sni=hh.ru&type=grpc#SNi
-vless://8e8cc759-f351-45d2-94f8-0f66d0972f97@153.80.249.67:443?encryption=none&fp=firefox&pbk=eJfq8tU0Ei_lWSK8YmHlwJDvL1cVe2v-L1y9obk_zxc&security=reality&sid=a1b2c3d4&sni=www.ya.ru&type=tcp#SNi
-vless://6a0a3a97-f063-5599-b5fa-2b5ad599a683@132.243.207.38:5000?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=0qifn7FGo1Fv6bAhw29gy5SmVHcWarBfIHTUPOwpXVs&security=reality&sid=360e&sni=www.vk.com&spx=/Z6qxGGgHtkdLzlM&type=tcp#SNi
-vless://8e8cc759-f351-45d2-94f8-0f66d0972f97@193.233.198.220:443?encryption=none&fp=firefox&pbk=NUefKitvfMI864jgqEtNRuPWjLMLj1YfLb7w8tXZv3k&security=reality&sid=a1b2c3d4&sni=www.ya.ru&type=tcp#SNi
-vless://8aca40d2-0f55-4ca2-97cb-b22ec432b82d@gr4.cryptoofarm.com:8443?security=reality&encryption=none&sni=gr4.cryptoofarm.com&fp=firefox&pbk=k_NAHiw_mvUm61Ah8F29FRSGtk4GMvsBdRqiwhcuRRw&sid=26c2b8ccfd4a&flow=xtls-rprx-vision#Beta-тест
 vless://302c2e89-6f2d-4500-90ce-26d075c7e84f@66.78.40.202:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=8zJkTehTmhmgKWUIj-CyJP4gtMjNxLgBxPjHC1wwW3A&security=reality&sid=61&sni=www.samsung.com&spx=/b46a29a208a37d1&type=tcp#Beta-тест
+vless://8aca40d2-0f55-4ca2-97cb-b22ec432b82d@gr4.cryptoofarm.com:8443?security=reality&encryption=none&sni=gr4.cryptoofarm.com&fp=firefox&pbk=k_NAHiw_mvUm61Ah8F29FRSGtk4GMvsBdRqiwhcuRRw&sid=26c2b8ccfd4a&flow=xtls-rprx-vision#Beta-тест
+vless://7bc48a0c-0943-42fd-a138-98ca90f941c5@45.84.222.156:2053?alpn=http/1.1&encryption=none&fp=firefox&host=justvpnchik.duckdns.org&path=/vless-ws&security=tls&sni=justvpnchik.duckdns.org&type=ws#Бесплатный
+vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@57.128.181.125:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
+vless://9aff0732-7ce4-4b34-ba20-e67c6df64fdd@nl1.panel11.ru:443?flow=xtls-rprx-vision&fp=firefox&headertype=none&pbk=2acMB9wUyI8FlUJQ6lI-Ig3qq4lYVSEQx18DReJyzAc&security=reality&sid=ebaea79f00bd5b6f&sni=nl1.panel11.ru&type=tcp#Бесплатный
+vless://7bc48a0c-0943-42fd-a138-98ca90f941c5@144.31.165.117:2096?alpn=h2&authority=justvpnchik.duckdns.org&encryption=none&fp=firefox&security=tls&serviceName=vless-grpc-tls&sni=justvpnchik.duckdns.org&type=grpc#Бесплатный
+vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@194.146.24.240:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
+vless://9100bc54-e58f-49fe-bd2d-e3d3dc1beb95@api.yandex-dev.org:443?security=reality&encryption=none&sni=api.yandex-dev.org&fp=qq&pbk=IuvAXlAWBpeXehmEk0P-FIGTctUhny2H3UilbWWfJC0&sid=122218f4c1f172e4&flow=xtls-rprx-vision#Бесплатный
 vless://7bc48a0c-0943-42fd-a138-98ca90f941c5@144.31.165.117:2053?alpn=http/1.1&encryption=none&fp=firefox&host=justvpnchik.duckdns.org&path=/vless-ws&security=tls&sni=justvpnchik.duckdns.org&type=ws#Бесплатный
 vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@212.23.221.62:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
 vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@158.180.231.216:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
-vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@194.146.24.240:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
-vless://7bc48a0c-0943-42fd-a138-98ca90f941c5@45.84.222.156:2053?alpn=http/1.1&encryption=none&fp=firefox&host=justvpnchik.duckdns.org&path=/vless-ws&security=tls&sni=justvpnchik.duckdns.org&type=ws#Бесплатный
-vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@57.128.181.125:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
-vless://9100bc54-e58f-49fe-bd2d-e3d3dc1beb95@api.yandex-dev.org:443?security=reality&encryption=none&sni=api.yandex-dev.org&fp=qq&pbk=IuvAXlAWBpeXehmEk0P-FIGTctUhny2H3UilbWWfJC0&sid=122218f4c1f172e4&flow=xtls-rprx-vision#Бесплатный
-vless://9aff0732-7ce4-4b34-ba20-e67c6df64fdd@nl1.panel11.ru:443?flow=xtls-rprx-vision&fp=firefox&headertype=none&pbk=2acMB9wUyI8FlUJQ6lI-Ig3qq4lYVSEQx18DReJyzAc&security=reality&sid=ebaea79f00bd5b6f&sni=nl1.panel11.ru&type=tcp#Бесплатный
 vless://7e760d89-a8f4-4a87-8f10-b4af28c61b7f@212.69.86.187:443?type=tcp&security=tls&encryption=none&flow=xtls-rprx-vision&fp=firefox&sni=cdn.intercom-home.online#Бесплатный
 vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@193.124.15.11:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
 vless://e911c552-3a98-41e0-b5fb-0dd3879887b7@91.232.114.148:443?encryption=none&fp=firefox&host=vod.ensf.top&path=/api/v1/irc&security=tls&sni=vod.ensf.top&type=ws#Бесплатный
