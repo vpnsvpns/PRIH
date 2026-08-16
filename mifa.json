@@ -4,6 +4,7 @@
 
 vless://2f919a1e-f00e-4538-b0a9-cf190721d578@2.26.227.49:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=HyxJ9UmGQlNG7YPMdc_jjvB8GW8JfeKmoi1CA1ZL5wM&security=reality&sni=ge1.shhflow.xyz&type=tcp#tg:VlessForU
 vless://c7e9c591-2764-423a-afca-efbd010fd396@45.139.184.183:2053?host=forfreeuse.rtqa.ru&path=%2F&security=tls&sni=forfreeuse.rtqa.ru&type=ws#tg:VlessForU
+vless://0aab2b19-c998-4344-9eba-5c38e8152b0c@185.141.227.107:4449/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=max.ru&fp=firefox&security=reality&pbk=n7SozQLXoCxDya7vBJwS5ebj39r4KCUZrfsnBfcCLGs&sid=ee65bc721c91#Все
 vless://423b1d79-08c4-403f-9d5e-c541f791b55f@176.109.85.71:14443?alpn=http%2F1.1&encryption=none&fp=qq&path=%2Fru&security=tls&sni=mws.tunnelgate.org&type=ws#LTE
 vless://137f3b50-a6ba-40e7-b537-e37fab064097@centraleurope.koexp.ru:4443?type=grpc&security=reality&pbk=-yJaCCGsucUDEnTTn6VJJyF0R5ZLlJAVNeIXFJYSGn8&sid=361c68748712c743&sni=dev.max.ru&serviceName=grpc-service&fp=qq#SNi
 vless://ba222add-6ac1-45f1-9a18-f91cb38e324f@201.51.1.84:16923?encryption=none&fp=&pbk=_QeslG3rHGM7DoM99pYC8-jpc16pM2MbNZ6NRMoxmHA&security=reality&serviceName=neurex&sid=10ffb85da1c2d986&sni=api-maps.yandex.ru&type=grpc#SNi
