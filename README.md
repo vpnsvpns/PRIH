@@ -83,14 +83,23 @@ https://vpnsvpns.github.io/Prihs/white.json
 
 | Название | Автоматическое подключение | Скопировать ссылку для браузера |
 | :--- | :---: | :--- |
-| **Обычный 1** | [🚀 Применить по клику](https://t.me/proxy?server=gamma-roxy.ip-ddns.com&port=443&secret=7pT8K0hK9uHhyH5ldrM8JXV2ay5jb20) | `tg://proxy?server=gamma-roxy.ip-ddns.com&port=443&secret=7pT8K0hK9uHhyH5ldrM8JXV2ay5jb20` |
-| **Обычный 2** | [🚀 Применить по клику](https://t.me/proxy?server=37.139.34.242&port=443&secret=dd2ed7517b077ef414e24b106e0729335d) | `tg://proxy?server=37.139.34.242&port=443&secret=dd2ed7517b077ef414e24b106e0729335d` |
-| **Обычный 3** | [🚀 Применить по клику](https://t.me/proxy?server=tgnn.live&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665) | `tg://proxy?server=tgnn.live&port=8443&secret=ee9e1dde0de02a2e7c22d10e2fff84101374676e6e2e6c697665` |
-| **Обычный 4** | [🚀 Применить по клику](https://t.me/proxy?server=protect.prx.mom&port=443&secret=eee8dc90a0a7661d074e78ea12b84126bc70726f746563742e7072782e6d6f6d) | `tg://proxy?server=protect.prx.mom&port=443&secret=eee8dc90a0a7661d074e78ea12b84126bc70726f746563742e7072782e6d6f6d` |
-| **Обычный 5 (Стабильный)** | [🚀 Применить по клику](https://t.me/proxy?server=91.108.249.27&port=7000&secret=ee5e096b25472d0fcb6e66cebbd7a14b) | `tg://proxy?server=91.108.249.27&port=7000&secret=ee5e096b25472d0fcb6e66cebbd7a14b` |
-| **Обычный 6** | [🚀 Применить по клику](https://t.me/proxy?server=37.139.35.8&port=443&secret=ee2b36bf4b66aa5454903e1f63fdef88bc7777772e6d6963726f736f66742e636f6d) | `tg://proxy?server=37.139.35.8&port=443&secret=ee2b36bf4b66aa5454903e1f63fdef88bc7777772e6d6963726f736f66742e636f6d` |
-| **Обычный 7** | [🚀 Применить по клику](https://t.me/proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477) | `tg://proxy?server=proxy.vmelectronics.ru&port=443&secret=ee6164732e78352e72759c6509729477` |
-| **Обычный 8** | [🚀 Применить по клику](https://t.me/proxy?server=fast.prx.mom&port=443&secret=ee4ab57d7496fa8fed3fc2cd1cea6ee1b7666173742e7072782e6d6f6d) | `tg://proxy?server=fast.prx.mom&port=443&secret=ee4ab57d7496fa8fed3fc2cd1cea6ee1b7666173742e7072782e6d6f6d` |
+| **Прокси 1** | [🚀 Применить по клику](https://t.me/proxy?server=fast.prx.mom&port=443&secret=7kq1fXSW-o_tP8LNHOpu4bdmYXN0LnByeC5tb20) | `tg://proxy?server=fast.prx.mom&port=443&secret=7kq1fXSW-o_tP8LNHOpu4bdmYXN0LnByeC5tb20` |
+| **Прокси 2** | [🚀 Применить по клику](https://t.me/proxy?server=nya-nya.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=nya-nya.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 3** | [🚀 Применить по клику](https://t.me/proxy?server=93.77.178.245&port=443&secret=ee676f6f676c652e636f6d749d157e2d) | `tg://proxy?server=93.77.178.245&port=443&secret=ee676f6f676c652e636f6d749d157e2d` |
+| **Прокси 4** | [🚀 Применить по клику](https://t.me/proxy?server=predator-artist.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=predator-artist.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 5** | [🚀 Применить по клику](https://t.me/proxy?server=akenai.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=akenai.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 6** | [🚀 Применить по клику](https://t.me/proxy?server=focus-ultimate.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=focus-ultimate.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 7** | [🚀 Применить по клику](https://t.me/proxy?server=cover-acid.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=cover-acid.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 8** | [🚀 Применить по клику](https://t.me/proxy?server=skill-issue.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=skill-issue.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 9** | [🚀 Применить по клику](https://t.me/proxy?server=i-love-femboys.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s) | `tg://proxy?server=i-love-femboys.top&port=853&secret=7lTOMw5GkMwpfSsDH_PyiLBtdC5ha2VuYWkuY2xpY2s` |
+| **Прокси 10** | [🚀 Применить по клику](https://t.me/proxy?server=t.meow-network.com&port=443&secret=7lYi4R__Pkm8yFKAGXphBrV0Lm1lb3ctbmV0d29yay5jb20) | `tg://proxy?server=t.meow-network.com&port=443&secret=7lYi4R__Pkm8yFKAGXphBrV0Lm1lb3ctbmV0d29yay5jb20` |
+| **Прокси 11** | [🚀 Применить по клику](https://t.me/proxy?server=proxtstar.live&port=443&secret=7moDM8HbP46rpcdnMaRCA7Zhdml0by5ydQ) | `tg://proxy?server=proxtstar.live&port=443&secret=7moDM8HbP46rpcdnMaRCA7Zhdml0by5ydQ` |
+| **Прокси 12** | [🚀 Применить по клику](https://t.me/proxy?server=nngo.cc&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed) | `tg://proxy?server=nngo.cc&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed` |
+| **Прокси 13** | [🚀 Применить по клику](https://t.me/proxy?server=85.192.34.18&port=9443&secret=7vOQ2XV8uS2HgmvO8opude10Z25uLmxpdmU) | `tg://proxy?server=85.192.34.18&port=9443&secret=7vOQ2XV8uS2HgmvO8opude10Z25uLmxpdmU` |
+| **Прокси 14** | [🚀 Применить по клику](https://t.me/proxy?server=proxy.trost-shield.ru&port=443&secret=ddb7de28881418c53c6fb2d216fc4a385c) | `tg://proxy?server=proxy.trost-shield.ru&port=443&secret=ddb7de28881418c53c6fb2d216fc4a385c` |
+| **Прокси 15** | [🚀 Применить по клику](https://t.me/proxy?server=nnmm.me&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed) | `tg://proxy?server=nnmm.me&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed` |
+| **Прокси 16** | [🚀 Применить по клику](https://t.me/proxy?server=tgnn.live&port=9443&secret=7vOQ2XV8uS2HgmvO8opude10Z25uLmxpdmU) | `tg://proxy?server=tgnn.live&port=9443&secret=7vOQ2XV8uS2HgmvO8opude10Z25uLmxpdmU` |
+| **Прокси 17** | [🚀 Применить по клику](https://t.me/proxy?server=85.192.35.94&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed) | `tg://proxy?server=85.192.35.94&port=443&secret=ddf390d9757cb92d87826bcef28a6e75ed` |
 
 ### 🛡️ Прокси для «Белых списков» (Работает и на обычном интернете)
 
