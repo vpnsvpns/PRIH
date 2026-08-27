@@ -2,10 +2,10 @@
 #profile-title: PrihVPN⚡ White
 #announce: Все обновы в тг PrihsVPN!
 
-vless://0cfee0f7-de6d-4d72-95c5-bb5d35094974@194.55.239.164:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&security=reality&sid=c427&sni=ads.vk.ru&type=tcp#🇩🇪
-vless://f5d86c05-fead-4819-b6a2-83b2857fd5de@194.55.239.164:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&security=reality&sid=e791&sni=ads.vk.ru&type=tcp#🇩🇪
-vless://423b1d79-08c4-403f-9d5e-c541f791b55f@176.109.85.71:14443?alpn=http/1.1&encryption=none&fp=firefox&path=/pl&security=tls&sni=mws.tunnelgate.org&type=ws#🇵🇱
-vless://423b1d79-08c4-403f-9d5e-c541f791b55f@176.109.85.71:14443?encryption=none&fp=firefox&path=/pl&security=tls&sni=mws.tunnelgate.org&type=ws#🇵🇱
-vless://2c634977-584e-4e1f-b501-1b70c77a6743@185.141.227.150:9002?encryption=none&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sni=api-maps.yandex.ru&type=grpc#🇧🇬
-vless://301d201a-cea0-4626-b593-c75d0699e89c@95.163.232.49:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=oqRus6Z_Q1jqJaTEPu7ENbRL0-XKOw54K0jwCCGLtEk&security=reality&sid=a9c4f17e3b62d8&sni=max.ru&type=tcp#🇬🇧
-vless://2c634977-584e-4e1f-b501-1b70c77a6743@185.141.227.150:9001?encryption=none&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sid=6ba85179e30d4fc2&sni=api-maps.yandex.ru&type=grpc#🇷🇺
+vless://0cfee0f7-de6d-4d72-95c5-bb5d35094974@194.55.239.164:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&security=reality&sid=c427&sni=ads.vk.ru&type=tcp#🇩🇪 Германия 1 WAIcore Ltd
+vless://f5d86c05-fead-4819-b6a2-83b2857fd5de@194.55.239.164:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&security=reality&sid=e791&sni=ads.vk.ru&type=tcp#🇩🇪 Германия 2 WAIcore Ltd
+vless://423b1d79-08c4-403f-9d5e-c541f791b55f@176.109.85.71:14443?alpn=http/1.1&encryption=none&fp=firefox&path=/pl&security=tls&sni=mws.tunnelgate.org&type=ws#🇵🇱 Польша 1 OC NETWORKS LIMITED
+vless://423b1d79-08c4-403f-9d5e-c541f791b55f@176.109.85.71:14443?encryption=none&fp=firefox&path=/pl&security=tls&sni=mws.tunnelgate.org&type=ws#🇵🇱 Польша 2 OC NETWORKS LIMITED
+vless://2c634977-584e-4e1f-b501-1b70c77a6743@185.141.227.150:9002?encryption=none&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sni=api-maps.yandex.ru&type=grpc#🇧🇬 Болгария Belcloud LTD
+vless://301d201a-cea0-4626-b593-c75d0699e89c@95.163.232.49:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=oqRus6Z_Q1jqJaTEPu7ENbRL0-XKOw54K0jwCCGLtEk&security=reality&sid=a9c4f17e3b62d8&sni=max.ru&type=tcp#🇬🇧 Великобритания Packet Star Networks Limited
+vless://2c634977-584e-4e1f-b501-1b70c77a6743@185.141.227.150:9001?encryption=none&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sid=6ba85179e30d4fc2&sni=api-maps.yandex.ru&type=grpc#🇷🇺 Россия JSC TIMEWEB
