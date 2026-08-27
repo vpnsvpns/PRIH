@@ -16,24 +16,25 @@ jobs:
 
       - name: Fetch and Process All Configs
         run: |
-          # Паттерн поиска ссылок (vless / trojan / ss / hysteria2)
-          RE="(vless|trojan|ss|hysteria2)://[^[:space:]\"']+"
+          # Паттерн: ссылка от схемы ДО КОНЦА СТРОКИ,
+          # чтобы название после # (с пробелами, флагами, кириллицей) сохранялось целиком
+          RE="(vless|trojan|ss|hysteria2)://.*"
 
           # Универсальный парсер:
-          # 1) ищет открытые ссылки в тексте
-          # 2) если пусто — декодирует файл целиком как один base64
-          # 3) если пусто — декодирует построчно
+          # 1) открытые ссылки в тексте
+          # 2) если пусто — весь файл как один base64
+          # 3) если пусто — построчный base64
           parse_into() {
             src="$1"; dst="$2"; tmp="$3"
             : > "$tmp"
-            grep -E -o -i "$RE" "$src" 2>/dev/null | grep -v "0.0.0.0" | awk '!seen[$0]++' > "$tmp" || true
+            tr -d '\r' < "$src" 2>/dev/null | grep -E -o -i "$RE" | grep -v "0.0.0.0" | sed 's/[[:space:]]*$//' | awk '!seen[$0]++' > "$tmp" || true
             if ! grep -q . "$tmp"; then
-              base64 -d -i "$src" 2>/dev/null | grep -E -o -i "$RE" | grep -v "0.0.0.0" | awk '!seen[$0]++' > "$tmp" || true
+              base64 -d -i "$src" 2>/dev/null | tr -d '\r' | grep -E -o -i "$RE" | grep -v "0.0.0.0" | sed 's/[[:space:]]*$//' | awk '!seen[$0]++' > "$tmp" || true
             fi
             if ! grep -q . "$tmp"; then
               while IFS= read -r line || [ -n "$line" ]; do
                 if [ -z "$line" ]; then continue; fi
-                printf '%s\n' "$line" | tr -d '\r' | base64 -d -i 2>/dev/null | grep -E -o -i "$RE" | grep -v "0.0.0.0" >> "$tmp" || true
+                printf '%s\n' "$line" | tr -d '\r' | base64 -d -i 2>/dev/null | tr -d '\r' | grep -E -o -i "$RE" | grep -v "0.0.0.0" | sed 's/[[:space:]]*$//' >> "$tmp" || true
               done < "$src"
               (awk '!seen[$0]++' "$tmp" > "$tmp.dedup" && mv "$tmp.dedup" "$tmp") || true
             fi
@@ -49,12 +50,10 @@ jobs:
           : > temp_mifa.txt
           : > tmp_links.txt
 
-          # 2. Скачиваем источники
-          curl -sLf "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/bwl" >> raw_white.txt || true
+          # 2. Скачиваем источники — все три одинаковым обычным curl, без User-Agent
+          curl -sL "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/bwl" -o raw_white.txt || true
           curl -sL "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/protocols/vless/transports/xhttp" -o temp_ros.txt || true
-          curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
-               "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/protocols/vless/transports/grpc" -o temp_mifa.txt || true
+          curl -sL "https://gitverse.ru/api/repos/Akres/VPN/raw/branch/master/protocols/vless/transports/grpc" -o temp_mifa.txt || true
 
           # 3. Генерируем фирменные шапки БЕЗ таймстампов
           {
