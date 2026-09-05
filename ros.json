@@ -2,14 +2,12 @@
 #profile-title: PrihVPN⚡ Ros
 #announce: Все обновы в тг PrihsVPN!
 
-vless://05bfcbaa-cba0-4bce-9103-09fe3f5f0667@167.233.219.201:443?alpn=h2&encryption=none&extra={"noSSEHeader":true,"xPaddingBytes":"100-1000"}&fp=firefox&path=/api/v3/stream/&security=tls&sni=fsn1.nordlinkcloud.com&type=xhttp#🇩🇪 Германия 1 Hetzner Online GmbH
-vless://05bfcbaa-cba0-4bce-9103-09fe3f5f0667@167.233.219.201:443?alpn=h2&encryption=none&fp=firefox&path=/api/v3/stream/&security=tls&sni=fsn1.nordlinkcloud.com&type=xhttp#🇩🇪 Германия 2 Hetzner Online GmbH
+vless://05bfcbaa-cba0-4bce-9103-09fe3f5f0667@167.233.219.201:443?alpn=h2&encryption=none&fp=firefox&path=/api/v3/stream/&security=tls&sni=fsn1.nordlinkcloud.com&type=xhttp#🇩🇪 Германия 1 Hetzner Online GmbH
+vless://05bfcbaa-cba0-4bce-9103-09fe3f5f0667@167.233.219.201:443?alpn=h2&encryption=none&extra={"noSSEHeader":true,"xPaddingBytes":"100-1000"}&fp=firefox&path=/api/v3/stream/&security=tls&sni=fsn1.nordlinkcloud.com&type=xhttp#🇩🇪 Германия 2 Hetzner Online GmbH
 vless://884f23e9-caab-4775-9ed9-6a3a9cae677f@151.101.69.253:443?alpn=h3&encryption=none&fp=firefox&host=lunex.store&path=/Lunex&security=tls&sni=accaunt.fastly.com&type=xhttp#🇩🇪 Германия 3 PLAY2GO INTERNATIONAL LIMITED
 vless://4cbefb4d-328c-411d-bf76-780df1082df8@31.76.89.110:8443?encryption=none&fp=firefox&host=wikihow.com&path=/&pbk=p9ISfhV0uZpKSgrK_8R6Mm4A01tWdzpKMlFR2TIj81s&security=reality&sni=wikihow.com&type=xhttp#🇫🇮 Финляндия 1 U1 DIGITAL SERVICES LTD
 vless://a34b5e88-cf0d-4c01-8199-2d1002d3c787@179.198.50.131:8443?encryption=none&fp=firefox&pbk=p9ISfhV0uZpKSgrK_8R6Mm4A01tWdzpKMlFR2TIj81s&security=reality&sni=wikihow.com&type=xhttp#🇫🇮 Финляндия 2 U1 DIGITAL SERVICES LTD
 vless://4cbefb4d-328c-411d-bf76-780df1082df8@179.198.50.131:8443?encryption=none&fp=firefox&host=wikihow.com&path=/&pbk=p9ISfhV0uZpKSgrK_8R6Mm4A01tWdzpKMlFR2TIj81s&security=reality&sni=wikihow.com&type=xhttp#🇫🇮 Финляндия 3 U1 DIGITAL SERVICES LTD
 vless://d7ff1a6d-529e-4260-aa46-3c8a7fd681f4@178.72.167.151:443?encryption=none&fp=firefox&host=2gis.ru&path=/eCuiEa7kedJ1UIGB3Gbgdt3XeUd&pbk=54p7hD_YYV5f2ATL7rTBk4NG_KhStO76-1_tSKmXah8&security=reality&sid=d45603&sni=2gis.ru&type=xhttp#🇷🇺 Россия 1 JSC Selectel
 vless://d7ff1a6d-529e-4260-aa46-3c8a7fd681f4@178.72.167.151:443?encryption=none&extra={"headers":{}}&fp=firefox&host=2gis.ru&path=/eCuiEa7kedJ1UIGB3Gbgdt3XeUd&pbk=54p7hD_YYV5f2ATL7rTBk4NG_KhStO76-1_tSKmXah8&security=reality&sid=d45603&sni=2gis.ru&type=xhttp#🇷🇺 Россия 2 JSC Selectel
-vless://05bfcbaa-cba0-4bce-9103-09fe3f5f0667@185.162.10.239:443?alpn=h2&encryption=none&extra={"noSSEHeader":true,"xPaddingBytes":"100-1000"}&fp=firefox&path=/api/v3/stream/&security=tls&sni=sof1.nordlinkcloud.com&type=xhttp#🇧🇬 Болгария ROUTE 95 LLC
 vless://5b45355f-1a9c-4802-90ed-0d1f5dcd4562@143.246.182.63:443?alpn=http/1.1,h2&encryption=none&fp=firefox&host=uk10.filesnap.tech&path=/assets/build/_app/immutable/chunks/stream-one/&security=tls&sni=uk10.filesnap.tech&type=xhttp#🇬🇧 Великобритания WEYRO LTD
-vless://49d2e492-1165-4756-ac95-0980391eae55@199.232.97.22:443?alpn=h3&encryption=none&fp=firefox&host=oh1.global.ssl.fastly.net&path=/&security=tls&sni=accounts.fastly.com&type=xhttp#🇵🇱 Польша OVH SAS
